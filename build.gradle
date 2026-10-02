@@ -28,6 +28,7 @@ sourceSets.main.resources {
 
 repositories {
     maven { url = 'https://api.modrinth.com/maven' }
+    maven { url = 'https://maven.blamejared.com' }
     // Add here additional repositories if required by some of the dependencies below.
 }
 
@@ -127,6 +128,9 @@ dependencies {
     implementation files(providers.gradleProperty('gregtechJar').getOrElse('libs/gregtech6-6.0.0-alpha.11.jar'))
     compileOnly "maven.modrinth:jade:${jade_version}"
     localRuntime "maven.modrinth:jade:${jade_version}"
+    compileOnly 'mezz.jei:jei-26.1.2-common-api:29.43.0.105'
+    compileOnly 'mezz.jei:jei-26.1.2-neoforge-api:29.43.0.105'
+    localRuntime 'mezz.jei:jei-26.1.2-neoforge:29.43.0.105'
     // Example optional mod dependency with JEI
     // The JEI API is declared for compile time use, while the full JEI artifact is used at runtime
     // compileOnly "mezz.jei:jei-${mc_version}-common-api:${jei_version}"
@@ -193,6 +197,7 @@ tasks.withType(JavaCompile).configureEach {
 
 tasks.named('test').configure {
     useJUnitPlatform()
+    maxHeapSize = '1G'
 }
 
 tasks.named('jar').configure {
