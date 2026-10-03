@@ -3,6 +3,9 @@ package com.plainston.gtqualityneo.integration.jade;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.lang.reflect.Proxy;
+import java.util.ArrayList;
+import java.util.List;
+import gregapi.data.MT;
 import gregapi.fluid.FluidTankGT;
 import gregapi.tileentity.multiblocks.MultiTileEntityMultiBlockPart;
 import gregapi.tileentity.multiblocks.ITileEntityMultiBlockController;
@@ -10,6 +13,7 @@ import gregtech.tileentity.multiblocks.MultiTileEntityCrucible;
 import gregtech.tileentity.tanks.MultiTileEntityBarrelMetal;
 import gregtech.tileentity.tools.MultiTileEntityMold;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.material.Fluids;
@@ -19,6 +23,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import snownee.jade.api.BlockAccessor;
+import snownee.jade.api.ITooltip;
 
 @ExtendWith(EphemeralTestServerProvider.class)
 class GT6DetailsTest {
@@ -78,6 +83,28 @@ class GT6DetailsTest {
         var view = groups.getFirst().views.getFirst();
         assertEquals(amount, view.fluids().getFirst().getAmount());
         assertEquals(capacity, view.capacity());
+    }
+
+    @Test void crucibleContentsShowMaterialNameInsteadOfTranslationKey() throws Exception {
+        CompoundTag material = new CompoundTag();
+        material.putShort("i", MT.Fe.mID);
+        material.putLong("a", 648648000L);
+        CompoundTag materials = new CompoundTag();
+        materials.put("0", material);
+        List<String> lines = new ArrayList<>();
+        ITooltip tooltip = (ITooltip) Proxy.newProxyInstance(ITooltip.class.getClassLoader(), new Class<?>[] { ITooltip.class },
+            (proxy, method, args) -> {
+                if (!method.getName().equals("add") || !(args[0] instanceof Component line))
+                    throw new AssertionError("Unexpected tooltip call: " + method.getName());
+                lines.add(line.getString());
+                return null;
+            });
+        var appendMaterials = GT6DetailsComponentProvider.class.getDeclaredMethod("appendMaterials", ITooltip.class, CompoundTag.class);
+        appendMaterials.setAccessible(true);
+        appendMaterials.invoke(null, tooltip, materials);
+        assertEquals(1, lines.size());
+        assertTrue(lines.getFirst().endsWith("1.000 Iron"), lines.getFirst());
+        assertFalse(lines.getFirst().contains("gt.material."));
     }
 
     private static BlockAccessor accessor(BlockEntity tile) {

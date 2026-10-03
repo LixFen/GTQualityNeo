@@ -439,7 +439,7 @@ public enum GT6DetailsComponentProvider implements IBlockComponentProvider {
                 if (row.isEmpty()) first = i + 1;
                 else row.append(" | ");
                 row.append(String.format(Locale.ROOT, "%.3f %s", amount / 1000.0,
-                    I18n.get("gt.material." + material.mNameInternal)));
+                    material.getLocal()));
             }
             if (i % 4 == 3 || i == 31 || !materials.contains(Integer.toString(i + 1))) {
                 if (!row.isEmpty()) tooltip.add(Component.literal(tr("materials") + " " + first + "–" + (i + 1) + ": " + row));

@@ -1,0 +1,108 @@
+name: CI and Release
+
+on:
+  push:
+    branches: ['**']
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref_type != 'tag' }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Java 25
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: gradle
+
+      - name: Resolve build version
+        id: version
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "$GITHUB_REF_TYPE" == tag ]]; then
+            if [[ ! "$GITHUB_REF_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+              echo '::error::Expected a version tag such as v0.1.1 or v0.1.1-alpha.1'
+              exit 1
+            fi
+            version="${GITHUB_REF_NAME#v}"
+          else
+            version="$(sed -n 's/^mod_version=//p' gradle.properties | tr -d '\r')"
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Download GregTech dependency
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p libs
+          curl --fail --location --retry 3 \
+            'https://github.com/wolfram0108/gregtech6_w/releases/download/v6.0.0-alpha.11/gregtech6-6.0.0-alpha.11.jar' \
+            --output libs/gregtech6-6.0.0-alpha.11.jar
+          echo '58b2ba9d185f8bd10350bf629a3d3d25acb1743f17a1d83877b1e95f121a01af  libs/gregtech6-6.0.0-alpha.11.jar' | sha256sum --check
+
+      - name: Build and test
+        env:
+          MOD_VERSION: ${{ steps.version.outputs.version }}
+        run: bash ./gradlew build --no-daemon --stacktrace "-Pmod_version=$MOD_VERSION"
+
+      - name: Upload jar
+        uses: actions/upload-artifact@v7
+        with:
+          name: gtqualityneo-${{ github.sha }}
+          path: build/libs/*.jar
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-reports-${{ github.sha }}
+          path: build/reports/tests/test/
+          if-no-files-found: ignore
+          retention-days: 14
+
+  release:
+    if: github.event_name == 'push' && github.ref_type == 'tag'
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - name: Download tested jar
+        uses: actions/download-artifact@v8
+        with:
+          name: gtqualityneo-${{ github.sha }}
+          path: release
+
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          MOD_VERSION: ${{ needs.build.outputs.version }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          options=()
+          if [[ "$MOD_VERSION" == *-* ]]; then
+            options+=(--prerelease)
+          fi
+          gh release create "$GITHUB_REF_NAME" "release/gtqualityneo-$MOD_VERSION.jar" \
+            --repo "$GITHUB_REPOSITORY" --verify-tag --generate-notes \
+            --title "GTQualityNeo $MOD_VERSION" "${options[@]}"

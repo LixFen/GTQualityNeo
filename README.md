@@ -2,7 +2,6 @@
 
 面向 GregTech 6 NeoForge 移植版的 GTQuality 附属模组。
 
-
 > [!WARNING]
 > 由于GT6w正在高速开发中
 > 本模组仅供参考，个人使用
@@ -43,7 +42,6 @@
 - GT6 工具 GUI 连续耐久/充能双状态条；识别 DuraDisplay 时避让。
 - JEI 高级工作台配方填充，支持 GT6 和原版合成分类，允许从工作台储存槽与玩家背包取材；不对工作台的第二个储存界面提供合成填充。
 
-配置文件由 NeoForge 生成：
 
 | 配置 | 文件类型 | 默认值 |
 | --- | --- | --- |
@@ -59,8 +57,6 @@
 服务端配置同步到客户端；速度范围为 `0–2`，设为 `0` 可关闭对应额外移动。关闭遮挡选项时重新沿用 GT6 自身的判断，不修改其全局静态开关。
 
 ## 构建
-
-先设置 `JAVA_HOME` 指向 Java 25。构建 GregTech 参考项目：
 
 ```powershell
 cd D:\CodeReference\gregtech6_w
@@ -78,12 +74,6 @@ cd D:\CodeReference\gregtech6_w
 ```powershell
 .\gradlew.bat build '-PgregtechJar=D:/CodeReference/gregtech6_w/build/libs/gregtech6-6.0.0-alpha.11.jar'
 ```
-
-`runClient` / `runServer` 使用同一 GregTech jar，并由 Gradle 获取 Jade。GregTech 与 Jade 不会打包进 GTQualityNeo。
-
-客户端使用 `run/`，独立服务器使用 `run/server/`，避免同时运行时争用日志和配置文件。
-
-Windows 的 `gradlew.bat` 自动将 Unix-domain socket 临时目录设置为项目内的 `.gradle/socket-tmp`，避免 `Unable to establish loopback connection`。该设置只影响本次启动的进程及其子进程，不修改全局环境变量。
 
 ## 来源
 
