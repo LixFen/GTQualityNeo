@@ -90,7 +90,7 @@ Quality-of-life additions for the GregTech 6 NeoForge port: machine interaction,
 [[dependencies.${mod_id}]]
     modId="jade"
     type="optional"
-    versionRange="[26.1.8,26.1.9)"
+    versionRange="[26.1.8,)"
     ordering="AFTER"
     side="BOTH"
 
