@@ -24,6 +24,8 @@ public enum GT6FluidStorageProvider implements IServerExtensionProvider<FluidVie
     @Override public List<ViewGroup<FluidView.Data>> getGroups(Accessor<?> accessor) {
         IFluidTank[] tanks;
         if (accessor.getTarget() instanceof TileEntityBase08FluidContainer container) tanks = new IFluidTank[] { container.mTank };
+        else if (accessor.getTarget() instanceof gregtech.tileentity.multiblocks.MultiTileEntityTank tank)
+            tanks = new IFluidTank[] { tank.mTank };
         else if (accessor.getTarget() instanceof TileEntityBase01Root root) tanks = root.getFluidTanksForCapability(null);
         else return null;
         if (tanks == null || tanks.length == 0) return null;

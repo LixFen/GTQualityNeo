@@ -28,13 +28,8 @@ public enum GT6MachineProvider implements IServerDataProvider<BlockAccessor> {
     }
 
     @Override
-    public boolean shouldRequestData(BlockAccessor accessor) {
-        return accessor.getBlockEntity() instanceof MultiTileEntityBasicMachine
-            || accessor.getBlockEntity() instanceof MultiTileEntityMultiBlockPart;
-    }
-
-    @Override
     public void appendServerData(CompoundTag data, BlockAccessor accessor) {
+        // Let the server classify the controller; the client's tile state may still be incomplete.
         BlockEntity tile = accessor.getBlockEntity();
         boolean throughPart = tile instanceof MultiTileEntityMultiBlockPart;
         if (tile instanceof MultiTileEntityMultiBlockPart part) {

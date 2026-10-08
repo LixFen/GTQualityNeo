@@ -1,6 +1,5 @@
 package com.plainston.gtqualityneo.qol;
 
-import com.plainston.gtqualityneo.mixin.MoldAccess;
 import gregapi.item.multiitem.MultiItemTool;
 import gregapi.oredict.OreDictPrefix;
 import gregtech.items.tools.early.GT_Tool_Chisel;
@@ -19,10 +18,14 @@ public final class MoldInteraction {
             && tool.getToolStats(stack) instanceof GT_Tool_Chisel;
     }
 
-    public static int shape(MultiTileEntityMold mold) { return ((MoldAccess) mold).gtquality$getShape(); }
+    public static int shape(MultiTileEntityMold mold) {
+        return mold.writeItemNBT2(new net.minecraft.nbt.CompoundTag()).getIntOr("gt.mold", 0);
+    }
 
     public static boolean canEdit(MultiTileEntityMold mold) {
-        return ((MoldAccess) mold).gtquality$getContent() == null && !mold.slotHas(0);
+        var saved = new net.minecraft.nbt.CompoundTag();
+        mold.writeToNBT2(saved);
+        return gregapi.oredict.OreDictMaterialStack.load(gregapi.data.CS.NBT_MATERIALS, saved).mAmount <= 0 && !mold.slotHas(0);
     }
 
     public static Map<Integer, OreDictPrefix> choices() {
@@ -41,12 +44,20 @@ public final class MoldInteraction {
         if (tile == null || tile.getClass() != MultiTileEntityMold.class) return;
         var mold = (MultiTileEntityMold) tile;
         if (!canEdit(mold) || selected != 0 && !choices().containsKey(selected)) return;
-        ((MoldAccess) mold).gtquality$setShape(selected);
+        setShape(mold, selected);
         mold.setChanged();
         mold.updateClientData();
         var data = player.getPersistentData();
         var persisted = data.getCompoundOrEmpty(net.minecraft.world.entity.player.Player.PERSISTED_NBT_TAG);
         persisted.putInt("gtqualityneo.lastMoldShape", selected);
         data.put(net.minecraft.world.entity.player.Player.PERSISTED_NBT_TAG, persisted);
+    }
+
+    public static void setShape(MultiTileEntityMold mold, int selected) {
+        // Read and write the complete public persistence state so temperature, materials and controls survive.
+        var saved = new net.minecraft.nbt.CompoundTag();
+        mold.writeToNBT2(saved);
+        saved.putInt("gt.mold", selected);
+        mold.readFromNBT2(saved);
     }
 }

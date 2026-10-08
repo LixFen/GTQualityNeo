@@ -49,8 +49,7 @@ public enum GT6DetailsComponentProvider implements IBlockComponentProvider {
         CompoundTag data = accessor.getServerData().getCompoundOrEmpty(GT6DetailsProvider.DATA);
         String kind = data.getStringOr("kind", "");
         boolean throughMultiblockPart = data.getBooleanOr("through_part", false);
-        if (throughMultiblockPart) tooltip.remove(JadeIds.UNIVERSAL_FLUID_STORAGE);
-        if (throughMultiblockPart) tooltip.add(Component.translatable("gtqualityneo.jade.controller"));
+        if (throughMultiblockPart || kind.equals("MultiTileEntityTank")) tooltip.remove(JadeIds.UNIVERSAL_FLUID_STORAGE);
         if (data.getBooleanOr(STATE_SUPPORTED, false)) appendInterfaceMachineState(tooltip, data);
         if (kind.equals("MultiTileEntityGeneratorSolid") || kind.equals("MultiTileEntityGeneratorFluidBed")
             || kind.equals("MultiTileEntityMixingBowl") || kind.equals("MultiTileEntitySiftingTable")
@@ -102,7 +101,7 @@ public enum GT6DetailsComponentProvider implements IBlockComponentProvider {
         } else if (kind.equals("MultiTileEntityMixingBowl")) {
             appendMixingBowl(tooltip, accessor, data, throughMultiblockPart);
         } else if (kind.equals("TileEntityBase08Barrel") || kind.equals("MultiTileEntityTank")) {
-            if (throughMultiblockPart) {
+            if (throughMultiblockPart || kind.equals("MultiTileEntityTank")) {
                 addStoredTank(tooltip, "tank", data);
             }
         } else if (kind.equals("MultiTileEntityPipeFluid")) {

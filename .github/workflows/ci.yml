@@ -18,6 +18,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    env:
+      GT_VERSION: 6.0.0-alpha.12
+      GT_SHA256: 3c53fa9463ae19d9b02daad745516e185ef29d9afaff547de2463f056af7ecf9
     outputs:
       version: ${{ steps.version.outputs.version }}
     steps:
@@ -52,14 +55,14 @@ jobs:
           set -euo pipefail
           mkdir -p libs
           curl --fail --location --retry 3 \
-            'https://github.com/wolfram0108/gregtech6_w/releases/download/v6.0.0-alpha.11/gregtech6-6.0.0-alpha.11.jar' \
-            --output libs/gregtech6-6.0.0-alpha.11.jar
-          echo '58b2ba9d185f8bd10350bf629a3d3d25acb1743f17a1d83877b1e95f121a01af  libs/gregtech6-6.0.0-alpha.11.jar' | sha256sum --check
+            "https://github.com/wolfram0108/gregtech6_w/releases/download/v$GT_VERSION/gregtech6-$GT_VERSION.jar" \
+            --output "libs/gregtech6-$GT_VERSION.jar"
+          echo "$GT_SHA256  libs/gregtech6-$GT_VERSION.jar" | sha256sum --check
 
       - name: Build and test
         env:
           MOD_VERSION: ${{ steps.version.outputs.version }}
-        run: bash ./gradlew build --no-daemon --stacktrace "-Pmod_version=$MOD_VERSION"
+        run: bash ./gradlew build --no-daemon --stacktrace "-Pmod_version=$MOD_VERSION" "-PgregtechJar=libs/gregtech6-$GT_VERSION.jar"
 
       - name: Upload jar
         uses: actions/upload-artifact@v7

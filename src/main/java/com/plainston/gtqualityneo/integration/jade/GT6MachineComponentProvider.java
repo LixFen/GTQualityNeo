@@ -40,7 +40,6 @@ public enum GT6MachineComponentProvider implements IBlockComponentProvider {
         if (!accessor.getServerData().contains(DATA)) return;
         CompoundTag data = accessor.getServerData().getCompoundOrEmpty(DATA);
         tooltip.remove(JadeIds.UNIVERSAL_ITEM_STORAGE);
-        if (data.getBooleanOr("through_part", false)) tooltip.add(tr("controller"));
         String state = data.getStringOr("state", "idle");
         int color = switch (state) {
             case "running" -> 0x55FF55;

@@ -55,12 +55,7 @@ public enum GT6DetailsProvider implements IServerDataProvider<BlockAccessor> {
 
     @Override public Identifier getUid() { return UID; }
 
-    @Override public boolean shouldRequestData(BlockAccessor accessor) {
-        BlockEntity tile = accessor.getBlockEntity();
-        return tile instanceof MultiTileEntityMultiBlockPart || !kind(tile).isEmpty()
-            && !(tile instanceof TileEntityBase08FluidContainer) && !(tile instanceof TileEntityBase08Barrel)
-            && !(tile instanceof MultiTileEntityTank) && !(tile instanceof MultiTileEntityPipeFluid);
-    }
+    // Registration is scoped to GT6 roots. Resolve supported devices on the server instead of excluding controllers on the client.
 
     @Override public void appendServerData(CompoundTag data, BlockAccessor accessor) {
         BlockEntity tile = accessor.getBlockEntity();

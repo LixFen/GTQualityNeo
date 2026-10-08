@@ -15,8 +15,10 @@ public final class QolEvents {
     private QolEvents() {}
 
     public static void damage(LivingIncomingDamageEvent event) {
+        UniversalHazmat.update(event.getEntity());
         if (GTQualityNeo.HEAT_HAZMAT_IMMUNITY.get() && event.getSource().is(DamageTypeTags.IS_FIRE)
-            && UT.Entities.isWearingFullHeatHazmat(event.getEntity())) event.setCanceled(true);
+            && (UniversalHazmat.fullSet(event.getEntity()) || UT.Entities.isWearingFullHeatHazmat(event.getEntity())))
+            event.setCanceled(true);
     }
 
     public static void moldClick(PlayerInteractEvent.RightClickBlock event) {

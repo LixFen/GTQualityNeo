@@ -27,13 +27,27 @@ import java.util.Optional;
 
 @JeiPlugin
 public final class GTQualityJeiPlugin implements IModPlugin {
+    private mezz.jei.api.runtime.IJeiRuntime runtime;
+    @Override public void onRuntimeAvailable(mezz.jei.api.runtime.IJeiRuntime runtime) { this.runtime = runtime; }
+    @Override public void onRuntimeUnavailable() { runtime = null; }
+    @Override public void registerCategories(mezz.jei.api.registration.IRecipeCategoryRegistration registration) {
+        if (GTQualityNeo.JEI_WORLDGEN.get()) registration.addRecipeCategories(
+            new com.plainston.gtqualityneo.integration.worldgen.WorldgenCategory(registration.getJeiHelpers().getGuiHelper(), () -> runtime));
+    }
+    @Override public void registerAdvanced(mezz.jei.api.registration.IAdvancedRegistration registration) {
+        if (GTQualityNeo.JEI_WORLDGEN.get()) registration.addSimpleRecipeManagerPlugin(
+            com.plainston.gtqualityneo.integration.worldgen.WorldgenCategory.TYPE,
+            new com.plainston.gtqualityneo.integration.worldgen.WorldgenLookup());
+    }
     @Override public Identifier getPluginUid() { return Identifier.fromNamespaceAndPath(GTQualityNeo.MOD_ID, "qol"); }
     @Override public void registerRecipeTransferHandlers(IRecipeTransferRegistration registration) {
         registration.addRecipeTransferHandler(new TableTransfer<>(GT6_JEI_CraftingCategory.TYPE));
         registration.addRecipeTransferHandler(new TableTransfer<>(RecipeTypes.CRAFTING));
     }
-    private record TableTransfer<R>(IRecipeType<R> type) implements IRecipeTransferInfo<ContainerCommon, R> {
-        @Override public Class<? extends ContainerCommon> getContainerClass() { return ContainerCommon.class; }
+    record TableTransfer<R>(IRecipeType<R> type) implements IRecipeTransferInfo<ContainerCommon, R> {
+        @Override public Class<? extends ContainerCommon> getContainerClass() {
+            return MultiTileEntityAdvancedCraftingTable.MultiTileEntityGUICommonAdvancedCraftingTable.class;
+        }
         @Override public Optional<MenuType<ContainerCommon>> getMenuType() { return Optional.of(ContainerCommon.MENU_TYPE.get()); }
         @Override public IRecipeType<R> getRecipeType() { return type; }
         @Override public boolean canHandle(ContainerCommon menu, R recipe) {
@@ -51,6 +65,7 @@ public final class GTQualityJeiPlugin implements IModPlugin {
     }
     @Override public void registerGuiHandlers(IGuiHandlerRegistration registration) {
         registration.addGhostIngredientHandler(CreativeTankScreen.class, new TankGhost());
+        registration.addGhostIngredientHandler(gregapi.gui.ContainerClient.class, new FilterGhostHandler());
     }
     private static final class TankGhost implements IGhostIngredientHandler<CreativeTankScreen> {
         @Override public <I> List<Target<I>> getTargetsTyped(CreativeTankScreen screen, ITypedIngredient<I> ingredient, boolean doStart) {

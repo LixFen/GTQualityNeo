@@ -19,6 +19,20 @@ import net.neoforged.neoforge.transfer.transaction.Transaction;
 public final class GuiFluidInteraction {
     private GuiFluidInteraction() {}
 
+    public static boolean isFluidSlot(ContainerCommonBasicMachine menu, int index) {
+        if (index < 0 || index >= menu.slots.size() || !(menu.getSlot(index) instanceof Slot_Render slot)
+            || !(menu.mTileEntity instanceof MultiTileEntityBasicMachine machine) || slot.container != machine) return false;
+        int fluidIndex = slot.getSlotIndex() - machine.mRecipes.mInputItemsCount - machine.mRecipes.mOutputItemsCount - 1;
+        return fluidIndex >= 0 && fluidIndex < machine.mTanksInput.length + machine.mTanksOutput.length;
+    }
+
+    public static boolean request(ServerPlayer player, int window, int slot, int button, boolean batch) {
+        if (!(player.containerMenu instanceof ContainerCommonBasicMachine menu) || menu.containerId != window
+            || !menu.stillValid(player) || !(menu.mTileEntity instanceof MultiTileEntityBasicMachine machine)
+            || !player.level().hasChunkAt(machine.getBlockPos()) || !player.level().mayInteract(player, machine.getBlockPos())) return false;
+        return click(menu, slot, button, batch ? ContainerInput.QUICK_MOVE : ContainerInput.PICKUP, player);
+    }
+
     public static boolean click(ContainerCommonBasicMachine menu, int index, int button, ContainerInput type,
                                 net.minecraft.world.entity.player.Player player) {
         if (!GTQualityNeo.GUI_FLUID_INTERACTION.get() || button < 0 || button > 1

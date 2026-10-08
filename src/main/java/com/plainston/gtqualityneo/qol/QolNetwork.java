@@ -25,6 +25,33 @@ public final class QolNetwork {
             ByteBufCodecs.INT, OpenMold::lastShape, OpenMold::new);
         @Override public Type<OpenMold> type() { return TYPE; }
     }
+    public record OpenCircuit(int slot, int original) implements CustomPacketPayload {
+        public static final Type<OpenCircuit> TYPE = QolNetwork.type("open_circuit");
+        public static final StreamCodec<RegistryFriendlyByteBuf, OpenCircuit> CODEC = StreamCodec.composite(
+            ByteBufCodecs.VAR_INT, OpenCircuit::slot, ByteBufCodecs.INT, OpenCircuit::original, OpenCircuit::new);
+        @Override public Type<OpenCircuit> type() { return TYPE; }
+    }
+    public record ClickFluid(int window, int slot, int button, boolean batch) implements CustomPacketPayload {
+        public static final Type<ClickFluid> TYPE = QolNetwork.type("click_fluid");
+        public static final StreamCodec<RegistryFriendlyByteBuf, ClickFluid> CODEC = StreamCodec.composite(
+            ByteBufCodecs.VAR_INT, ClickFluid::window, ByteBufCodecs.VAR_INT, ClickFluid::slot,
+            ByteBufCodecs.VAR_INT, ClickFluid::button, ByteBufCodecs.BOOL, ClickFluid::batch, ClickFluid::new);
+        @Override public Type<ClickFluid> type() { return TYPE; }
+    }
+    public record SelectCircuit(int slot, int original, int number) implements CustomPacketPayload {
+        public static final Type<SelectCircuit> TYPE = QolNetwork.type("select_circuit");
+        public static final StreamCodec<RegistryFriendlyByteBuf, SelectCircuit> CODEC = StreamCodec.composite(
+            ByteBufCodecs.VAR_INT, SelectCircuit::slot, ByteBufCodecs.INT, SelectCircuit::original,
+            ByteBufCodecs.VAR_INT, SelectCircuit::number, SelectCircuit::new);
+        @Override public Type<SelectCircuit> type() { return TYPE; }
+    }
+    public record SelectFilter(int window, int slot, net.minecraft.world.item.ItemStack stack) implements CustomPacketPayload {
+        public static final Type<SelectFilter> TYPE = QolNetwork.type("select_filter");
+        public static final StreamCodec<RegistryFriendlyByteBuf, SelectFilter> CODEC = StreamCodec.composite(
+            ByteBufCodecs.VAR_INT, SelectFilter::window, ByteBufCodecs.VAR_INT, SelectFilter::slot,
+            net.minecraft.world.item.ItemStack.STREAM_CODEC, SelectFilter::stack, SelectFilter::new);
+        @Override public Type<SelectFilter> type() { return TYPE; }
+    }
     public record SelectMold(BlockPos pos, int shape) implements CustomPacketPayload {
         public static final Type<SelectMold> TYPE = QolNetwork.type("select_mold");
         public static final StreamCodec<RegistryFriendlyByteBuf, SelectMold> CODEC = StreamCodec.composite(
@@ -48,6 +75,19 @@ public final class QolNetwork {
     public static void register(RegisterPayloadHandlersEvent event) {
         var registrar = event.registrar("1");
         registrar.playToClient(OpenMold.TYPE, OpenMold.CODEC);
+        registrar.playToClient(OpenCircuit.TYPE, OpenCircuit.CODEC);
+        registrar.playToServer(ClickFluid.TYPE, ClickFluid.CODEC, (packet, context) -> {
+            if (context.player() instanceof ServerPlayer player)
+                com.plainston.gtqualityneo.fluid.GuiFluidInteraction.request(player, packet.window(), packet.slot(), packet.button(), packet.batch());
+        });
+        registrar.playToServer(SelectCircuit.TYPE, SelectCircuit.CODEC, (packet, context) -> {
+            if (context.player() instanceof ServerPlayer player)
+                CircuitInteraction.select(player, packet.slot(), packet.original(), packet.number());
+        });
+        registrar.playToServer(SelectFilter.TYPE, SelectFilter.CODEC, (packet, context) -> {
+            if (context.player() instanceof ServerPlayer player)
+                FilterGhost.select(player, packet.window(), packet.slot(), packet.stack());
+        });
         registrar.playToClient(TankState.TYPE, TankState.CODEC);
         registrar.playToServer(SelectMold.TYPE, SelectMold.CODEC, (packet, context) -> {
             if (context.player() instanceof ServerPlayer player) MoldInteraction.select(player, packet.pos(), packet.shape());

@@ -25,6 +25,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import java.util.ArrayList;
+import java.util.List;
 
 @ExtendWith(EphemeralTestServerProvider.class)
 class QolTest {
@@ -202,7 +203,7 @@ class QolTest {
         assertTrue(FluidStack.isSameFluidSameComponents(tank.settings().fluid(), placed.settings().fluid()));
     }
 
-    @Test void moldAccessorAndEmptyCheckWorkOnTransformedGT6Class() {
+    @Test void moldPersistenceAPIRecognizesEmptyAndOccupiedMolds() {
         var mold = new MultiTileEntityMold();
         mold.readFromNBT2(new net.minecraft.nbt.CompoundTag());
         assertTrue(MoldInteraction.canEdit(mold));
@@ -235,16 +236,27 @@ class QolTest {
         var world = server.overworld();
         world.setBlock(new BlockPos(0, 70, 1), Blocks.STONE.defaultBlockState(), 3);
         var setting = com.plainston.gtqualityneo.GTQualityNeo.OBSTRUCTED_INTERACTION;
+        ObstructionConfig.restore();
         boolean previous = setting.get(), gtPrevious = gregapi.data.CS.OBSTRUCTION_CHECKS;
         try {
             gregapi.data.CS.OBSTRUCTION_CHECKS = true;
             setting.set(false);
+            ObstructionConfig.apply();
             assertTrue(gregapi.util.WD.obstructed(world, 0, 70, 0, (byte) 3));
             setting.set(true);
+            ObstructionConfig.apply();
             assertFalse(gregapi.util.WD.obstructed(world, 0, 70, 0, (byte) 3));
+            ObstructionConfig.restore();
+            assertTrue(gregapi.data.CS.OBSTRUCTION_CHECKS);
+            gregapi.data.CS.OBSTRUCTION_CHECKS = false;
+            ObstructionConfig.apply();
+            ObstructionConfig.restore();
+            assertFalse(gregapi.data.CS.OBSTRUCTION_CHECKS, "Restore the upstream value, even when already disabled");
         } finally {
+            ObstructionConfig.restore();
             setting.set(previous);
             gregapi.data.CS.OBSTRUCTION_CHECKS = gtPrevious;
+            ObstructionConfig.apply();
         }
     }
 
@@ -277,4 +289,233 @@ class QolTest {
             "MultiTileEntityGeneratorFluidBed"))
             assertDoesNotThrow(() -> Class.forName("gregtech.tileentity.energy.generators." + name));
     }
+
+    @Test void circuitSelectionPreservesCountModeAndComponentsAndRejectsStaleRequests() {
+        var player = net.neoforged.neoforge.common.util.FakePlayerFactory.getMinecraft(server.overworld());
+        var circuitItem = net.minecraft.core.registries.BuiltInRegistries.ITEM.stream()
+            .filter(item -> item instanceof gregapi.item.ItemIntegratedCircuit).findFirst().orElseThrow();
+        var stack = new ItemStack(circuitItem, 16);
+        stack.set(DataComponents.CUSTOM_NAME, Component.literal("named circuit"));
+        gregapi.util.ST.meta_(stack, 0x0203);
+        player.getInventory().setSelectedSlot(0);
+        player.getInventory().setItem(0, stack);
+        try {
+            assertFalse(CircuitInteraction.select(player, 0, 0x0203, 25));
+            assertFalse(CircuitInteraction.select(player, 1, 0x0203, 7));
+            assertFalse(CircuitInteraction.select(player, 0, 0x0204, 7));
+            assertEquals(0x0203, gregapi.util.ST.meta_(stack));
+            assertTrue(CircuitInteraction.select(player, 0, 0x0203, 24));
+            assertEquals(0x0218, gregapi.util.ST.meta_(stack));
+            assertEquals(16, stack.getCount());
+            assertEquals(Component.literal("named circuit"), stack.get(DataComponents.CUSTOM_NAME));
+            var option = com.plainston.gtqualityneo.GTQualityNeo.CIRCUIT_SELECTOR;
+            boolean previous = option.get();
+            option.set(false);
+            try { assertFalse(CircuitInteraction.select(player, 0, 0x0218, 0)); }
+            finally { option.set(previous); }
+        } finally { player.getInventory().setItem(0, ItemStack.EMPTY); }
+    }
+
+    @Test void hazmatDefaultComponentsRetainDamageAndDoNotPersistEnhancedLimit() {
+        var option = com.plainston.gtqualityneo.GTQualityNeo.UNIVERSAL_HAZMAT;
+        boolean previous = option.get();
+        var stack = new ItemStack(gregapi.data.CS.ArmorsGT.HAZMAT_UNIVERSAL[0]);
+        stack.set(DataComponents.DAMAGE, 100);
+        stack.set(DataComponents.CUSTOM_NAME, Component.literal("old suit"));
+        try {
+            option.set(true);
+            assertEquals(512, stack.getMaxDamage());
+            assertEquals(412, stack.getMaxDamage() - stack.getDamageValue());
+            stack.setDamageValue(200);
+            assertEquals(200, stack.getDamageValue());
+            option.set(false);
+            assertEquals(512, stack.getMaxDamage(), "Default component changes take effect at startup, not a live toggle");
+            assertEquals(200, stack.get(DataComponents.DAMAGE));
+            option.set(true);
+            assertEquals(200, stack.getDamageValue());
+            assertEquals(Component.literal("old suit"), stack.get(DataComponents.CUSTOM_NAME));
+            assertNull(stack.getComponentsPatch().getPatch(DataComponents.MAX_DAMAGE), "Enhanced limit is inherited, not saved to stacks");
+        } finally { option.set(previous); }
+    }
+
+    @Test void fluidRequestsValidateMenuAndUseRealCursorWithoutMenuMixin() {
+        server.overworld().getChunkAt(BlockPos.ZERO);
+        var player = net.neoforged.neoforge.common.util.FakePlayerFactory.getMinecraft(server.overworld());
+        boolean[] usable = {true};
+        var machine = new gregapi.tileentity.machines.MultiTileEntityBasicMachine() {
+            @Override public boolean isUseableByPlayerGUI(net.minecraft.world.entity.player.Player ignored) { return usable[0]; }
+            @Override public ItemStack getStackInSlotGUI(int slot) { return ItemStack.EMPTY; }
+        };
+        machine.setLevel(server.overworld());
+        machine.mTanksInput = new FluidTankGT[]{new FluidTankGT(4000)};
+        machine.mTanksOutput = new FluidTankGT[]{new FluidTankGT(new FluidStack(Fluids.WATER, 1000), 4000)};
+        var menu = new gregapi.gui.ContainerCommonBasicMachine(player.getInventory(), machine, machine.mRecipes, 0) {
+            @Override public int addSlots(net.minecraft.world.entity.player.Inventory inventory) {
+                int offset = machine.mRecipes.mInputItemsCount + machine.mRecipes.mOutputItemsCount + 1;
+                addSlot(new gregapi.gui.Slot_Render(machine, offset, 0, 0));
+                addSlot(new gregapi.gui.Slot_Render(machine, offset + 1, 18, 0));
+                return 84;
+            }
+        };
+        var original = player.containerMenu;
+        player.containerMenu = menu;
+        menu.setCarried(new ItemStack(Items.WATER_BUCKET));
+        try {
+            assertFalse(GuiFluidInteraction.request(player, menu.containerId + 1, 0, 0, false));
+            assertFalse(GuiFluidInteraction.request(player, menu.containerId, -1, 0, false));
+            assertFalse(GuiFluidInteraction.request(player, menu.containerId, 0, 2, false));
+            assertEquals(0, machine.mTanksInput[0].amount());
+            assertTrue(GuiFluidInteraction.request(player, menu.containerId, 0, 0, false));
+            assertEquals(1000, machine.mTanksInput[0].amount());
+            assertTrue(menu.getCarried().is(Items.BUCKET));
+            assertTrue(GuiFluidInteraction.request(player, menu.containerId, 1, 1, false));
+            assertEquals(0, machine.mTanksOutput[0].amount());
+            assertTrue(menu.getCarried().is(Items.WATER_BUCKET));
+            assertTrue(GuiFluidInteraction.request(player, menu.containerId, 1, 0, false));
+            assertEquals(0, machine.mTanksOutput[0].amount(), "Output slot cannot receive water");
+            usable[0] = false;
+            assertFalse(GuiFluidInteraction.request(player, menu.containerId, 0, 0, false));
+            assertEquals(1000, machine.mTanksInput[0].amount());
+        } finally { player.containerMenu = original; }
+    }
+
+    @Test void hazmatComponentsRespectDisabledStartupOption() {
+        var predicates = new ArrayList<com.mojang.datafixers.util.Pair<
+            net.neoforged.neoforge.event.ModifyDefaultComponentsEvent.ItemWithComponentsPredicate,
+            net.neoforged.neoforge.event.ModifyDefaultComponentsEvent.Initializer>>();
+        var event = new net.neoforged.neoforge.event.ModifyDefaultComponentsEvent(new java.util.HashMap<>(), predicates);
+        UniversalHazmat.components(event);
+        var item = gregapi.data.CS.ArmorsGT.HAZMAT_UNIVERSAL[0];
+        var option = com.plainston.gtqualityneo.GTQualityNeo.UNIVERSAL_HAZMAT;
+        boolean previous = option.get();
+        try {
+            for (boolean enabled : new boolean[]{false, true}) {
+                option.set(enabled);
+                var builder = net.minecraft.core.component.DataComponentMap.builder().set(DataComponents.MAX_DAMAGE, 128);
+                for (var entry : predicates) if (entry.getFirst().test(item, builder))
+                    entry.getSecond().run(builder, server.registryAccess(), item);
+                assertEquals(enabled ? 512 : 128, builder.build().get(DataComponents.MAX_DAMAGE));
+            }
+        } finally { option.set(previous); }
+    }
+
+    @Test void moldShapeChangeThroughNBTKeepsTemperatureControlsAndContent() {
+        var mold = new MultiTileEntityMold();
+        var original = new net.minecraft.nbt.CompoundTag();
+        original.putLong("gt.temperature", 70000);
+        original.putByte("gt.connection", (byte) 12);
+        original.putBoolean("gt.mode", true);
+        new gregapi.oredict.OreDictMaterialStack(gregapi.data.MT.Fe, gregapi.data.CS.U).save(gregapi.data.CS.NBT_MATERIALS, original);
+        mold.readFromNBT2(original);
+        MoldInteraction.setShape(mold, 1);
+        var saved = new net.minecraft.nbt.CompoundTag();
+        mold.writeToNBT2(saved);
+        assertEquals(1, MoldInteraction.shape(mold));
+        assertEquals(70000, saved.getLongOr("gt.temperature", 0));
+        assertEquals(12, saved.getByteOr("gt.connection", (byte) 0));
+        assertTrue(saved.getBooleanOr("gt.mode", false));
+        assertEquals(gregapi.data.CS.U, gregapi.oredict.OreDictMaterialStack.load(gregapi.data.CS.NBT_MATERIALS, saved).mAmount);
+        assertFalse(MoldInteraction.canEdit(mold));
+    }
+
+    @Test void fullUniversalSuitAddsArmorAndRemovingPieceOrDisablingRestoresBase() throws Exception {
+        var wearer = new net.minecraft.world.entity.monster.zombie.Zombie(net.minecraft.world.entity.EntityType.ZOMBIE, server.overworld());
+        wearer.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ARMOR).setBaseValue(0);
+        var slots = new net.minecraft.world.entity.EquipmentSlot[]{net.minecraft.world.entity.EquipmentSlot.HEAD,
+            net.minecraft.world.entity.EquipmentSlot.CHEST, net.minecraft.world.entity.EquipmentSlot.LEGS, net.minecraft.world.entity.EquipmentSlot.FEET};
+        var update = net.minecraft.world.entity.LivingEntity.class.getDeclaredMethod("detectEquipmentUpdates");
+        update.setAccessible(true);
+        var option = com.plainston.gtqualityneo.GTQualityNeo.UNIVERSAL_HAZMAT;
+        boolean previous = option.get();
+        try {
+            option.set(true);
+            for (int i = 0; i < slots.length; i++) wearer.setItemSlot(slots[i], new ItemStack(gregapi.data.CS.ArmorsGT.HAZMAT_UNIVERSAL[i]));
+            update.invoke(wearer);
+            UniversalHazmat.update(wearer);
+            assertTrue(UniversalHazmat.fullSet(wearer));
+            assertEquals(20, wearer.getArmorValue());
+            option.set(false);
+            UniversalHazmat.update(wearer);
+            assertEquals(4, wearer.getArmorValue());
+            option.set(true);
+            wearer.setItemSlot(slots[0], ItemStack.EMPTY);
+            update.invoke(wearer);
+            UniversalHazmat.update(wearer);
+            assertFalse(UniversalHazmat.fullSet(wearer));
+            assertEquals(3, wearer.getArmorValue());
+        } finally { option.set(previous); }
+    }
+
+    @Test void fullUniversalSuitBlocksFireWithArmorUpgradeDisabledAndRespectsImmunityOption() {
+        var wearer = new net.minecraft.world.entity.monster.zombie.Zombie(net.minecraft.world.entity.EntityType.ZOMBIE, server.overworld());
+        var slots = new net.minecraft.world.entity.EquipmentSlot[]{net.minecraft.world.entity.EquipmentSlot.HEAD,
+            net.minecraft.world.entity.EquipmentSlot.CHEST, net.minecraft.world.entity.EquipmentSlot.LEGS, net.minecraft.world.entity.EquipmentSlot.FEET};
+        var armor = com.plainston.gtqualityneo.GTQualityNeo.UNIVERSAL_HAZMAT;
+        var fire = com.plainston.gtqualityneo.GTQualityNeo.HEAT_HAZMAT_IMMUNITY;
+        boolean oldArmor = armor.get(), oldFire = fire.get();
+        try {
+            armor.set(false);
+            fire.set(true);
+            for (int i = 0; i < slots.length; i++) wearer.setItemSlot(slots[i], new ItemStack(gregapi.data.CS.ArmorsGT.HAZMAT_UNIVERSAL[i]));
+            for (var source : List.of(wearer.damageSources().inFire(), wearer.damageSources().onFire(), wearer.damageSources().lava())) {
+                assertTrue(source.is(net.minecraft.tags.DamageTypeTags.IS_FIRE));
+                var event = new net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent(wearer,
+                    new net.neoforged.neoforge.common.damagesource.DamageContainer(source, 10));
+                QolEvents.damage(event);
+                assertTrue(event.isCanceled());
+            }
+            var generic = new net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent(wearer,
+                new net.neoforged.neoforge.common.damagesource.DamageContainer(wearer.damageSources().generic(), 10));
+            QolEvents.damage(generic);
+            assertFalse(generic.isCanceled());
+            fire.set(false);
+            var disabled = new net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent(wearer,
+                new net.neoforged.neoforge.common.damagesource.DamageContainer(wearer.damageSources().lava(), 10));
+            QolEvents.damage(disabled);
+            assertFalse(disabled.isCanceled());
+            fire.set(true);
+            wearer.setItemSlot(slots[0], ItemStack.EMPTY);
+            var partial = new net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent(wearer,
+                new net.neoforged.neoforge.common.damagesource.DamageContainer(wearer.damageSources().lava(), 10));
+            QolEvents.damage(partial);
+            assertFalse(partial.isCanceled());
+        } finally { armor.set(oldArmor); fire.set(oldFire); }
+    }
+
+    @Test void filterGhostSetsItemAndFluidWithoutChangingCursorAndRejectsInvalidSlots() {
+        server.overworld().getChunkAt(BlockPos.ZERO);
+        var player = net.neoforged.neoforge.common.util.FakePlayerFactory.getMinecraft(server.overworld());
+        boolean[] usable = {true};
+        var filter = new gregtech.tileentity.extenders.MultiTileEntityFilter() {
+            @Override public boolean isUseableByPlayerGUI(net.minecraft.world.entity.player.Player ignored) { return usable[0]; }
+        };
+        filter.setLevel(server.overworld());
+        filter.mModes = gregtech.tileentity.extenders.MultiTileEntityExtender.EXTENDER_INV;
+        var menu = filter.new MultiTileEntityGUICommonFilter(player.getInventory(), filter, 0);
+        var originalMenu = player.containerMenu;
+        var held = new ItemStack(Items.DIAMOND, 3);
+        menu.setCarried(held);
+        player.containerMenu = menu;
+        try {
+            assertFalse(FilterGhost.select(player, menu.containerId + 1, 0, new ItemStack(Items.IRON_INGOT)));
+            assertFalse(FilterGhost.select(player, menu.containerId, -1, new ItemStack(Items.IRON_INGOT)));
+            assertFalse(FilterGhost.select(player, menu.containerId, 54, new ItemStack(Items.IRON_INGOT)));
+            assertTrue(FilterGhost.select(player, menu.containerId, 0, new ItemStack(Items.IRON_INGOT, 64)));
+            assertTrue(filter.mFilter[0].is(Items.IRON_INGOT));
+            assertEquals(1, filter.mFilter[0].getCount());
+            filter.mModes = gregtech.tileentity.extenders.MultiTileEntityExtender.EXTENDER_TANK;
+            assertTrue(FilterGhost.select(player, menu.containerId, 1, new ItemStack(Items.WATER_BUCKET)));
+            assertTrue(filter.allowInput(Fluids.WATER));
+            assertFalse(filter.allowInput(Fluids.LAVA));
+            assertTrue(FilterGhost.select(player, menu.containerId, 1, gregapi.data.FL.display(Fluids.LAVA)));
+            assertTrue(filter.allowInput(Fluids.LAVA));
+            usable[0] = false;
+            assertFalse(FilterGhost.select(player, menu.containerId, 1, gregapi.data.FL.display(Fluids.WATER)));
+            assertTrue(filter.allowInput(Fluids.LAVA));
+            assertSame(held, menu.getCarried());
+            assertEquals(3, held.getCount());
+        } finally { player.containerMenu = originalMenu; }
+    }
+
+
 }

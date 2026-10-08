@@ -8,18 +8,13 @@
     "ScaffoldCollisionMixin",
     "MassStorageFormMixin",
     "BurningBoxAirMixin",
-    "MoldAccess",
-    "FluidMenuMixin",
     "SmallCoverMixin",
-    "HopperShapeMixin",
-    "MoldStateMixin",
-    "ObstructionMixin"
+    "HopperShapeMixin"
   ],
   "injectors": {
     "defaultRequire": 1
   },
   "client": [
-    "client.ToolDecorationMixin",
     "client.ToolModelMixin"
   ]
 }
