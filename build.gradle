@@ -127,7 +127,7 @@ dependencies {
     // Use JEI's complete mod jar so its API and implementation share Minecraft's transforming loader in tests.
     testImplementation 'mezz.jei:jei-26.1.2-neoforge:29.43.0.105@jar'
     // Develop and test against the current GT6 port.
-    def gregtechJar = providers.gradleProperty('gregtechJar').orElse('libs/gregtech6-6.0.0-alpha.12.jar')
+    def gregtechJar = providers.gradleProperty('gregtechJar').orElse('libs/gregtech6-6.0.0-alpha.13.jar')
     compileOnly files(gregtechJar)
     testCompileOnly files(gregtechJar)
     runtimeOnly files(providers.gradleProperty('gregtechRuntimeJar').orElse(gregtechJar))

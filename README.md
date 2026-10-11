@@ -61,12 +61,7 @@
 
 ## 构建
 
-```powershell
-cd D:\CodeReference\gregtech6_w
-.\gradlew.bat jar
-```
-
-将其 `build/libs/gregtech6-6.0.0-alpha.12.jar` 放入本项目 `libs/`，然后运行：
+开发环境默认使用 [GT6 alpha.13 官方发布版](https://github.com/wolfram0108/gregtech6_w/releases/tag/v6.0.0-alpha.13)。将 `gregtech6-6.0.0-alpha.13.jar` 放入本项目 `libs/`，然后运行：
 
 ```powershell
 .\gradlew.bat build
@@ -75,13 +70,13 @@ cd D:\CodeReference\gregtech6_w
 也可直接指定依赖位置：
 
 ```powershell
-.\gradlew.bat build '-PgregtechJar=D:/CodeReference/gregtech6_w/build/libs/gregtech6-6.0.0-alpha.12.jar'
+.\gradlew.bat build '-PgregtechJar=D:/CodeReference/gregtech6_w/build/libs/gregtech6-6.0.0-alpha.13.jar'
 ```
 
 如需单独指定开发运行时依赖：
 
 ```powershell
-.\gradlew.bat build '-PgregtechRuntimeJar=libs/gregtech6-6.0.0-alpha.12.jar'
+.\gradlew.bat runClient '-PgregtechRuntimeJar=libs/gregtech6-6.0.0-alpha.13.jar'
 ```
 
 ## 来源

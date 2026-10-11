@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import gregapi.data.MT;
 import gregapi.fluid.FluidTankGT;
+import gregapi.tileentity.machines.MultiTileEntityBasicMachine;
 import gregapi.tileentity.multiblocks.MultiTileEntityMultiBlockPart;
 import gregapi.tileentity.multiblocks.ITileEntityMultiBlockController;
 import gregtech.tileentity.multiblocks.MultiTileEntityCrucible;
@@ -146,6 +147,29 @@ class GT6DetailsTest {
         assertEquals("MultiTileEntityTank", snapshot.getStringOr("kind", ""));
         assertEquals(8000, snapshot.getLongOr("gtquality.capacity", 0));
         assertFalse(snapshot.getBooleanOr("through_part", true));
+    }
+
+    @Test void machineFluidViewReadsNativeInputAndOutputTanks() {
+        long amount = (long) Integer.MAX_VALUE + 5000;
+        var machine = new MultiTileEntityBasicMachine();
+        machine.mTanksInput = new FluidTankGT[] {
+            new FluidTankGT(new FluidStack(Fluids.WATER, 1), amount, amount * 2)
+        };
+        machine.mTanksOutput = new FluidTankGT[] {
+            new FluidTankGT(new FluidStack(Fluids.LAVA, 1), 1000, 8000)
+        };
+        var groups = GT6FluidStorageProvider.INSTANCE.getGroups(accessor(machine));
+        assertNotNull(groups);
+        var views = groups.getFirst().views;
+        assertEquals(2, views.size());
+        assertEquals(amount, views.getFirst().fluids().getFirst().getAmount());
+        assertEquals(amount * 2, views.getFirst().capacity());
+        assertEquals(1000, views.get(1).fluids().getFirst().getAmount());
+        assertEquals(8000, views.get(1).capacity());
+    }
+
+    @Test void machineWithoutFluidTanksDoesNotBreakJadeRequest() {
+        assertNull(GT6FluidStorageProvider.INSTANCE.getGroups(accessor(new MultiTileEntityBasicMachine())));
     }
 
     @Test void jadeFluidViewKeepsQuantitiesBeyondIntegerRange() {

@@ -3,6 +3,7 @@ package com.plainston.gtqualityneo.integration.jade;
 import java.util.ArrayList;
 import java.util.List;
 
+import gregapi.data.CS;
 import gregapi.fluid.FluidTankGT;
 import gregapi.tileentity.base.TileEntityBase01Root;
 import gregapi.tileentity.tank.TileEntityBase08FluidContainer;
@@ -26,7 +27,9 @@ public enum GT6FluidStorageProvider implements IServerExtensionProvider<FluidVie
         if (accessor.getTarget() instanceof TileEntityBase08FluidContainer container) tanks = new IFluidTank[] { container.mTank };
         else if (accessor.getTarget() instanceof gregtech.tileentity.multiblocks.MultiTileEntityTank tank)
             tanks = new IFluidTank[] { tank.mTank };
-        else if (accessor.getTarget() instanceof TileEntityBase01Root root) tanks = root.getFluidTanksForCapability(null);
+        // The capability convenience method is absent in released GT6 alpha.13.
+        // The public multiblock overload also exposes a root's native tanks with SIDE_ANY.
+        else if (accessor.getTarget() instanceof TileEntityBase01Root root) tanks = root.getFluidTanks(null, CS.SIDE_ANY);
         else return null;
         if (tanks == null || tanks.length == 0) return null;
         List<FluidView.Data> fluids = new ArrayList<>();

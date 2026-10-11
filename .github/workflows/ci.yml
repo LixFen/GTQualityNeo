@@ -19,8 +19,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     env:
-      GT_VERSION: 6.0.0-alpha.12
-      GT_SHA256: 3c53fa9463ae19d9b02daad745516e185ef29d9afaff547de2463f056af7ecf9
+      GT_VERSION: 6.0.0-alpha.13
+      GT_SHA256: d88b5f7ca441666d08a98d42b3deb909cf24340d0797e7e00575966c895b6f4b
     outputs:
       version: ${{ steps.version.outputs.version }}
     steps:
