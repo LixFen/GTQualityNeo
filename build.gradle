@@ -126,6 +126,11 @@ dependencies {
     testImplementation "net.neoforged:testframework:${neo_version}"
     // Use JEI's complete mod jar so its API and implementation share Minecraft's transforming loader in tests.
     testImplementation 'mezz.jei:jei-26.1.2-neoforge:29.43.0.105@jar'
+    compileOnly "maven.modrinth:ae2:26.1.13-beta"
+    testImplementation "maven.modrinth:ae2:26.1.13-beta"
+    localRuntime "maven.modrinth:ae2:26.1.13-beta"
+    localRuntime "maven.modrinth:guideme:26.1.15-beta"
+    testRuntimeOnly "maven.modrinth:guideme:26.1.15-beta"
     // Develop and test against the current GT6 port.
     def gregtechJar = providers.gradleProperty('gregtechJar').orElse('libs/gregtech6-6.0.0-alpha.16.jar')
     compileOnly files(gregtechJar)

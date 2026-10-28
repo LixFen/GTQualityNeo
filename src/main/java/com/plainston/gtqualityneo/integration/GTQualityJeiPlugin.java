@@ -31,10 +31,13 @@ public final class GTQualityJeiPlugin implements IModPlugin {
     @Override public void onRuntimeAvailable(mezz.jei.api.runtime.IJeiRuntime runtime) { this.runtime = runtime; }
     @Override public void onRuntimeUnavailable() { runtime = null; }
     @Override public void registerCategories(mezz.jei.api.registration.IRecipeCategoryRegistration registration) {
+        if (GTQualityNeo.JEI_MULTIBLOCKS.get()) registration.addRecipeCategories(new com.plainston.gtqualityneo.integration.multiblock.MultiblockCategory(registration.getJeiHelpers(), () -> runtime));
         if (GTQualityNeo.JEI_WORLDGEN.get()) registration.addRecipeCategories(
             new com.plainston.gtqualityneo.integration.worldgen.WorldgenCategory(registration.getJeiHelpers().getGuiHelper(), () -> runtime));
     }
     @Override public void registerAdvanced(mezz.jei.api.registration.IAdvancedRegistration registration) {
+        if (GTQualityNeo.JEI_MULTIBLOCKS.get()) registration.addSimpleRecipeManagerPlugin(
+            com.plainston.gtqualityneo.integration.multiblock.MultiblockCategory.TYPE, new com.plainston.gtqualityneo.integration.multiblock.MultiblockLookup());
         if (GTQualityNeo.JEI_WORLDGEN.get()) registration.addSimpleRecipeManagerPlugin(
             com.plainston.gtqualityneo.integration.worldgen.WorldgenCategory.TYPE,
             new com.plainston.gtqualityneo.integration.worldgen.WorldgenLookup());

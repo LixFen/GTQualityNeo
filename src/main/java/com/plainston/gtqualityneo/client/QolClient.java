@@ -27,6 +27,9 @@ public final class QolClient {
     private static Object consumedFluidScreen;
 
     public QolClient(IEventBus bus) {
+        bus.addListener((net.neoforged.neoforge.client.event.RegisterPictureInPictureRenderersEvent event) ->
+            event.register(com.plainston.gtqualityneo.integration.multiblock.StructureRenderState.class,
+                com.plainston.gtqualityneo.integration.multiblock.StructureRenderer::new));
         bus.addListener((net.neoforged.neoforge.client.event.RegisterItemDecorationsEvent event) -> {
             for (var item : net.minecraft.core.registries.BuiltInRegistries.ITEM)
                 if (item instanceof gregapi.item.multiitem.MultiItemTool)
@@ -49,6 +52,7 @@ public final class QolClient {
         bus.addListener((net.neoforged.neoforge.client.event.RegisterMenuScreensEvent event) ->
             event.register(CreativeTankMenu.TYPE.get(), CreativeTankScreen::new));
         NeoForge.EVENT_BUS.addListener(QolClient::tooltip);
+        NeoForge.EVENT_BUS.addListener(ModifiedTooltip::append);
         NeoForge.EVENT_BUS.addListener(QolClient::climb);
         NeoForge.EVENT_BUS.addListener(QolClient::fluidClick);
         NeoForge.EVENT_BUS.addListener(QolClient::filterTooltip);
@@ -65,6 +69,10 @@ public final class QolClient {
     }
 
     private static void tooltip(ItemTooltipEvent event) {
+        if (com.plainston.gtqualityneo.tools.DrillInteraction.tier(event.getItemStack()) > 0) {
+            event.getToolTip().add(Component.translatable("gtqualityneo.drill.tooltip"));
+            event.getToolTip().add(Component.translatable("gtqualityneo.drill.mode", com.plainston.gtqualityneo.tools.DrillInteraction.label(event.getItemStack())));
+        }
         if (GTQualityNeo.SERVER_CONFIG.isLoaded() && GTQualityNeo.CIRCUIT_SELECTOR.get()
             && com.plainston.gtqualityneo.qol.CircuitInteraction.isCircuit(event.getItemStack()))
             event.getToolTip().add(Component.translatable("gtqualityneo.circuit.tooltip"));

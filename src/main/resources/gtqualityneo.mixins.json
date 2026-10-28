@@ -9,12 +9,18 @@
     "MassStorageFormMixin",
     "BurningBoxAirMixin",
     "SmallCoverMixin",
-    "HopperShapeMixin"
+    "HopperShapeMixin",
+    "DrillMiningMixin",
+    "OneWayFluidPipeMixin",
+    "PreviewWorldMixin",
+    "MultiblockPreviewCaptureMixin",
+    "DrillNameMixin"
   ],
   "injectors": {
     "defaultRequire": 1
   },
   "client": [
-    "client.ToolModelMixin"
+    "client.ToolModelMixin",
+    "client.GuiGraphicsAccessor"
   ]
 }

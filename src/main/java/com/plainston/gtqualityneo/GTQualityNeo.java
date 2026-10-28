@@ -17,7 +17,7 @@ public final class GTQualityNeo {
     public static final ModConfigSpec.BooleanValue JADE_INTEGRATION;
     public static final ModConfigSpec SERVER_CONFIG, CLIENT_CONFIG;
     public static final ModConfigSpec.BooleanValue OBSTRUCTED_INTERACTION, GUI_FLUID_INTERACTION,
-        SAP_BAG_EXTRACTION, HEAT_HAZMAT_IMMUNITY, TOOL_BARS, CIRCUIT_SELECTOR, UNIVERSAL_HAZMAT, JEI_WORLDGEN;
+        SAP_BAG_EXTRACTION, HEAT_HAZMAT_IMMUNITY, TOOL_BARS, CIRCUIT_SELECTOR, UNIVERSAL_HAZMAT, JEI_WORLDGEN, DRILL_MODES, ONE_WAY_PIPES, JEI_MULTIBLOCKS, MODIFIED_TOOLTIPS;
     public static final ModConfigSpec.DoubleValue SCAFFOLD_UP, SCAFFOLD_DOWN;
 
     static {
@@ -28,6 +28,8 @@ public final class GTQualityNeo {
             .define("universalHazmatEnhancement", true);
         CONFIG = builder.build();
         builder = new ModConfigSpec.Builder();
+        DRILL_MODES = builder.define("drillRangeModes", true);
+        ONE_WAY_PIPES = builder.define("oneWayFluidPipes", true);
         OBSTRUCTED_INTERACTION = builder.define("allowObstructedInteraction", true);
         GUI_FLUID_INTERACTION = builder.define("guiFluidInteraction", true);
         SAP_BAG_EXTRACTION = builder.define("allowSapBagHopperExtraction", true);
@@ -38,6 +40,9 @@ public final class GTQualityNeo {
         SCAFFOLD_DOWN = builder.defineInRange("scaffoldClimbDownSpeed", 0.15, 0.0, 2.0);
         SERVER_CONFIG = builder.build();
         builder = new ModConfigSpec.Builder();
+        MODIFIED_TOOLTIPS = builder.comment("Show animated rainbow tooltips on items with targeted GTQuality changes.")
+            .define("modifiedItemTooltips", true);
+        JEI_MULTIBLOCKS = builder.define("jeiMultiblockPreview", true);
         TOOL_BARS = builder.define("gtmToolBars", true);
         JEI_WORLDGEN = builder.comment("Display configured GT6 resource generation rules in JEI. Restart required.")
             .define("jeiWorldgenDisplay", true);
@@ -52,7 +57,10 @@ public final class GTQualityNeo {
         bus.addListener(com.plainston.gtqualityneo.qol.UniversalHazmat::components);
         bus.addListener(com.plainston.gtqualityneo.qol.ObstructionConfig::configChanged);
         CreativeTank.register(bus);
+        if (net.neoforged.fml.ModList.get().isLoaded("ae2"))
+            com.plainston.gtqualityneo.integration.ae2.AE2Integration.register(bus);
         NeoForge.EVENT_BUS.addListener(QolEvents::damage);
+        NeoForge.EVENT_BUS.addListener(com.plainston.gtqualityneo.tools.DrillInteraction::rightClick);
         NeoForge.EVENT_BUS.addListener(QolEvents::moldClick);
         NeoForge.EVENT_BUS.addListener(com.plainston.gtqualityneo.qol.CircuitInteraction::rightClickItem);
         NeoForge.EVENT_BUS.addListener(com.plainston.gtqualityneo.qol.CircuitInteraction::rightClickBlock);

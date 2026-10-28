@@ -29,6 +29,49 @@ import java.util.List;
 
 @ExtendWith(EphemeralTestServerProvider.class)
 class QolTest {
+    @Test void modifiedItemMarkersOnlyCoverTargetedChanges() {
+        assertFalse(ModifiedItems.contains(ItemStack.EMPTY));
+        assertFalse(ModifiedItems.contains(new ItemStack(Items.STONE)));
+        assertFalse(ModifiedItems.contains(new ItemStack(Items.IRON_PICKAXE)));
+        assertFalse(ModifiedItems.contains(new ItemStack(CreativeTank.ITEM.get())));
+        assertTrue(ModifiedItems.contains(new ItemStack(Items.OAK_TRAPDOOR)));
+        assertTrue(ModifiedItems.contains(new ItemStack(Items.IRON_TRAPDOOR)));
+        for (var armor : gregapi.data.CS.ArmorsGT.HAZMAT_UNIVERSAL)
+            assertTrue(ModifiedItems.contains(new ItemStack(armor)));
+        var drill = gregapi.data.CS.ToolsGT.sMetaTool.getToolWithStats(gregapi.data.CS.ToolsGT.MININGDRILL_LV,
+            gregapi.data.MT.Steel, gregapi.data.MT.StainlessSteel);
+        assertTrue(ModifiedItems.contains(drill));
+        var pickaxe = gregapi.data.CS.ToolsGT.sMetaTool.getToolWithStats(gregapi.data.CS.ToolsGT.PICKAXE,
+            gregapi.data.MT.Steel, gregapi.data.MT.StainlessSteel);
+        assertFalse(ModifiedItems.contains(pickaxe));
+        var registry = gregapi.block.multitileentity.MultiTileEntityRegistry.getRegistry("gt.multitileentity");
+        for (Class<?> type : List.of(MultiTileEntityMold.class,
+            gregapi.tileentity.inventories.MultiTileEntityMassStorage.class, MultiTileEntitySapBag.class,
+            MultiTileEntityScaffold.class, gregtech.tileentity.inventories.MultiTileEntityHopper.class,
+            gregtech.tileentity.inventories.MultiTileEntityQueueHopper.class,
+            gregapi.tileentity.connectors.MultiTileEntityPipeFluid.class,
+            gregapi.tileentity.connectors.MultiTileEntityWireRedstone.class,
+            gregapi.tileentity.connectors.MultiTileEntityWireRedstoneInsulated.class,
+            gregtech.tileentity.energy.generators.MultiTileEntityGeneratorSolid.class,
+            gregtech.tileentity.energy.generators.MultiTileEntityGeneratorLiquid.class,
+            gregtech.tileentity.energy.generators.MultiTileEntityGeneratorFluidBed.class,
+            gregtech.tileentity.extenders.MultiTileEntityFilter.class,
+            gregapi.tileentity.tools.MultiTileEntityAdvancedCraftingTable.class)) {
+            var entries = registry.mRegistrations.stream().filter(value -> type.isAssignableFrom(value.mClass)).toList();
+            assertFalse(entries.isEmpty(), "Missing registered fixture: " + type.getSimpleName());
+            for (var entry : entries) {
+                // The shape selector only handles the ordinary mold, not specialized mold subclasses.
+                boolean expected = type != MultiTileEntityMold.class || entry.mClass == MultiTileEntityMold.class;
+                assertEquals(expected, ModifiedItems.contains(registry.getItem(entry.mID)),
+                    type.getSimpleName() + ": " + entry.mID);
+            }
+        }
+        var machine = registry.mRegistrations.stream()
+            .filter(value -> value.mClass == gregapi.tileentity.machines.MultiTileEntityBasicMachine.class)
+            .findFirst().orElseThrow();
+        assertFalse(ModifiedItems.contains(registry.getItem(machine.mID)));
+    }
+
     private static MinecraftServer server;
     @BeforeAll static void initialize(MinecraftServer instance) throws Exception {
         server = instance;
@@ -518,4 +561,89 @@ class QolTest {
     }
 
 
+
+    @Test void singleDirectionPipePortSurvivesSaveAndClientVisualSync() {
+        var pipe = new gregapi.tileentity.connectors.MultiTileEntityPipeFluid();
+        pipe.setLevel(server.overworld());
+        pipe.setDirectionData((byte) 3);
+        var chat = new ArrayList<String>();
+        assertTrue(pipe.canAcceptFluidsFrom((byte) 1));
+        long cost = pipe.onToolClick2(gregapi.data.CS.TOOL_wrench, Long.MAX_VALUE, 1, null, chat, null,
+            true, ItemStack.EMPTY, (byte) 1, .5f, 1f, .5f);
+        assertEquals(10000, cost);
+        assertFalse(pipe.canAcceptFluidsFrom((byte) 1));
+        assertTrue(pipe.canAcceptFluidsFrom((byte) 0));
+        assertTrue(pipe.canEmitFluidsTo((byte) 1));
+        var saved = new net.minecraft.nbt.CompoundTag();
+        pipe.writeToNBT2(saved);
+        var reloaded = new gregapi.tileentity.connectors.MultiTileEntityPipeFluid();
+        reloaded.readFromNBT2(saved);
+        assertFalse(reloaded.canAcceptFluidsFrom((byte) 1));
+        var client = new gregapi.tileentity.connectors.MultiTileEntityPipeFluid();
+        client.setVisualData(pipe.getVisualData());
+        assertEquals(pipe.getVisualData(), client.getVisualData());
+        reloaded.setLevel(server.overworld());
+        reloaded.onToolClick2(gregapi.data.CS.TOOL_wrench, Long.MAX_VALUE, 1, null, chat, null,
+            true, ItemStack.EMPTY, (byte) 1, .5f, 1f, .5f);
+        assertTrue(reloaded.canAcceptFluidsFrom((byte) 1));
+    }
+
+    @Test void drillModeSwitchAllowsGtBlockEntitiesButLeavesOtherBlockEntitiesAlone() throws Exception {
+        server.submit(() -> {
+            var world = server.overworld();
+            var player = net.neoforged.neoforge.common.util.FakePlayerFactory.getMinecraft(world);
+            var originalHand = player.getMainHandItem();
+            boolean originalSneaking = player.isShiftKeyDown();
+            var drill = gregapi.data.CS.ToolsGT.sMetaTool.getToolWithStats(gregapi.data.CS.ToolsGT.MININGDRILL_LV,
+                gregapi.data.MT.Steel, gregapi.data.MT.StainlessSteel);
+            var registry = gregapi.block.multitileentity.MultiTileEntityRegistry.getRegistry("gt.multitileentity");
+            var entry = registry.mRegistrations.stream().filter(value -> value.mClass == MultiTileEntitySapBag.class).findFirst().orElseThrow();
+            var pos = new BlockPos(96, 100, 96);
+            var gt = registry.getNewTileEntityContainer(world, pos.getX(), pos.getY(), pos.getZ(), entry.mID, null);
+            assertNotNull(gt);
+            player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, drill);
+            player.setShiftKeyDown(true);
+            try {
+                for (int target = 0; target < 3; target++) {
+                    world.setBlock(pos, target == 0 ? Blocks.STONE.defaultBlockState()
+                        : target == 1 ? Blocks.CHEST.defaultBlockState() : gt.mBlock.defaultBlockState(), 3);
+                    if (target == 2) world.setBlockEntity(gt.mTileEntity);
+                    assertEquals(target != 0, world.getBlockEntity(pos) != null);
+                    if (target == 2) assertInstanceOf(gregapi.item.IItemGT.class, world.getBlockState(pos).getBlock());
+                    int before = com.plainston.gtqualityneo.tools.DrillInteraction.mode(drill);
+                    var event = new net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.RightClickBlock(player,
+                        net.minecraft.world.InteractionHand.MAIN_HAND, pos,
+                        new net.minecraft.world.phys.BlockHitResult(net.minecraft.world.phys.Vec3.atCenterOf(pos), net.minecraft.core.Direction.UP, pos, false));
+                    com.plainston.gtqualityneo.tools.DrillInteraction.rightClick(event);
+                    boolean allowed = target != 1;
+                    assertEquals(allowed, event.isCanceled());
+                    assertEquals(allowed ? com.plainston.gtqualityneo.tools.DrillModes.next(1, before) : before,
+                        com.plainston.gtqualityneo.tools.DrillInteraction.mode(drill));
+                }
+            } finally {
+                player.setShiftKeyDown(originalSneaking);
+                player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, originalHand);
+                world.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
+            }
+        }).get();
+    }
+
+    @Test void creativeDrillUsesVanillaBreakPathOnlyForItsRequestedPlane() throws Exception {
+        server.submit(() -> {
+            var player = net.neoforged.neoforge.common.util.FakePlayerFactory.getMinecraft(server.overworld());
+            player.setGameMode(net.minecraft.world.level.GameType.CREATIVE);
+            var stack = gregapi.data.CS.ToolsGT.sMetaTool.getToolWithStats(gregapi.data.CS.ToolsGT.MININGDRILL_LV,
+                gregapi.data.MT.Steel, gregapi.data.MT.StainlessSteel);
+            player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, stack);
+            var origin = new BlockPos(32, 100, 32);
+            for (int x = -1; x <= 1; x++) for (int y = -1; y <= 1; y++)
+                server.overworld().setBlock(origin.offset(x, y, 0), Blocks.STONE.defaultBlockState(), 3);
+            server.overworld().setBlock(origin.offset(0, 0, 1), Blocks.STONE.defaultBlockState(), 3);
+            com.plainston.gtqualityneo.tools.DrillMining.harvest(player, origin,
+                new com.plainston.gtqualityneo.tools.DrillMining.Context(stack, 2, 1, 1.5f));
+            for (int x = -1; x <= 1; x++) for (int y = -1; y <= 1; y++)
+                assertEquals(x == 0 && y == 0, server.overworld().getBlockState(origin.offset(x, y, 0)).is(Blocks.STONE));
+            assertTrue(server.overworld().getBlockState(origin.offset(0, 0, 1)).is(Blocks.STONE));
+        }).get();
+    }
 }

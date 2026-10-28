@@ -18,6 +18,7 @@ public final class GTQualityJadePlugin implements IWailaPlugin {
     public void register(IWailaCommonRegistration registration) {
         if (!GTQualityNeo.JADE_INTEGRATION.get()) return;
         registration.registerBlockDataProvider(GT6MachineProvider.INSTANCE, TileEntityBase01Root.class);
+        registration.registerBlockDataProvider(GT6PartPortsProvider.INSTANCE, gregapi.tileentity.multiblocks.MultiTileEntityMultiBlockPart.class);
         registration.registerBlockDataProvider(GT6DetailsProvider.INSTANCE, TileEntityBase01Root.class);
         registration.registerItemStorage(GT6ItemStorageProvider.INSTANCE, MultiTileEntityMassStorage.class);
         registration.registerItemStorage(GT6ItemStorageProvider.INSTANCE, MultiTileEntityChest.class);
@@ -29,6 +30,7 @@ public final class GTQualityJadePlugin implements IWailaPlugin {
     public void registerClient(IWailaClientRegistration registration) {
         if (!GTQualityNeo.JADE_INTEGRATION.get()) return;
         registration.registerBlockComponent(GT6MachineComponentProvider.INSTANCE, Block.class);
+        registration.registerBlockComponent(GT6PartPortsComponentProvider.INSTANCE, Block.class);
         registration.registerBlockComponent(GT6DetailsComponentProvider.INSTANCE, Block.class);
         registration.registerItemStorageClient(GT6ItemStorageClientProvider.INSTANCE);
         registration.registerFluidStorageClient(GT6FluidStorageClientProvider.INSTANCE);
