@@ -81,6 +81,12 @@
 - 在元件工作台中标记输出形态，同种材料最靠前的有效标记生效；其他材料默认使用标准粉。ME 网络仅显示和允许提取选定形态。
 - 安装反相卡后，仅允许已标记材料继续输入，已有其他材料仍可提取。带自定义名称等附加组件的粉末不会被归并。
 
+## FTB Quests 联动
+
+安装 FTB Quests 后，GT6W 物品任务在默认的 `match_components=none` 模式下匹配 **Item + subtype**，忽略电量、磨损、自定义名称及其他组件差异，避免同一形态的不同材料被当作同一种物品。未携带 subtype 的物品按 `0` 处理，不使用旧配方的通配 meta 规则。
+
+任务手动选择 `fuzzy` 或 `strict` 时，保留 FTB Quests 原有组件匹配规则；非 GT6W 物品和过滤器任务也保持原有行为。已有 `strict` 任务若需要放宽匹配，应改为 `none`。FTB Quests 为可选依赖，未安装时跳过联动；测试版本为 FTB Quests `26.1.2.9`。
+
 ## 构建
 
 开发环境默认使用 [GT6 alpha.16 官方发布版](https://github.com/wolfram0108/gregtech6_w/releases/tag/v6.0.0-alpha.16)。将 `gregtech6-6.0.0-alpha.16.jar` 放入本项目 `libs/`，然后运行：

@@ -14,7 +14,8 @@
     "OneWayFluidPipeMixin",
     "PreviewWorldMixin",
     "MultiblockPreviewCaptureMixin",
-    "DrillNameMixin"
+    "DrillNameMixin",
+    "FtbItemMatchingMixin"
   ],
   "injectors": {
     "defaultRequire": 1

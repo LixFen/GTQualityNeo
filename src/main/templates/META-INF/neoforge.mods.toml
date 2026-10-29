@@ -116,3 +116,10 @@ config="gtqualityneo.mixins.json"
     versionRange="[26.1.13-beta,26.2)"
     ordering="AFTER"
     side="BOTH"
+
+[[dependencies.${mod_id}]]
+modId="ftbquests"
+type="optional"
+versionRange="[26.1.2.9,26.2)"
+ordering="AFTER"
+side="BOTH"
