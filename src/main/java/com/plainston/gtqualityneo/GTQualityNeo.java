@@ -43,7 +43,8 @@ public final class GTQualityNeo {
         MODIFIED_TOOLTIPS = builder.comment("Show animated rainbow tooltips on items with targeted GTQuality changes.")
             .define("modifiedItemTooltips", true);
         JEI_MULTIBLOCKS = builder.define("jeiMultiblockPreview", true);
-        TOOL_BARS = builder.define("gtmToolBars", true);
+        TOOL_BARS = builder.comment("Show tool durability/charge bars and fluid-colored battery charge bars in GUIs.")
+            .define("gtmToolBars", true);
         JEI_WORLDGEN = builder.comment("Display configured GT6 resource generation rules in JEI. Restart required.")
             .define("jeiWorldgenDisplay", true);
         CLIENT_CONFIG = builder.build();

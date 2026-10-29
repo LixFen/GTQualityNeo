@@ -30,6 +30,9 @@ public final class ToolBars {
     }
     private static void bar(GuiGraphicsExtractor graphics, int x, int y, int width, int left, int right) {
         if (width <= 3) { left = 0x7a0000; right = 0xff1b1b; }
+        gradientBar(graphics, x, y, width, left, right);
+    }
+    public static void gradientBar(GuiGraphicsExtractor graphics, int x, int y, int width, int left, int right) {
         graphics.fill(x + 2, y, x + 15, y + 2, 0xff000000);
         for (int i = 0; i < width; i++) {
             float t = width <= 1 ? 0 : (float) i / (width - 1);

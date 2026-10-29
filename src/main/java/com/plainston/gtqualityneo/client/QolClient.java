@@ -31,12 +31,18 @@ public final class QolClient {
             event.register(com.plainston.gtqualityneo.integration.multiblock.StructureRenderState.class,
                 com.plainston.gtqualityneo.integration.multiblock.StructureRenderer::new));
         bus.addListener((net.neoforged.neoforge.client.event.RegisterItemDecorationsEvent event) -> {
-            for (var item : net.minecraft.core.registries.BuiltInRegistries.ITEM)
+            for (var item : net.minecraft.core.registries.BuiltInRegistries.ITEM) {
                 if (item instanceof gregapi.item.multiitem.MultiItemTool)
                     event.register(item, (graphics, font, stack, x, y) -> {
                         ToolBars.draw(graphics, stack, x, y);
                         return false;
                     });
+                else if (item instanceof MultiTileEntityItemInternal)
+                    event.register(item, (graphics, font, stack, x, y) -> {
+                        BatteryBars.draw(graphics, stack, x, y);
+                        return false;
+                    });
+            }
         });
         bus.addListener((net.neoforged.neoforge.client.network.event.RegisterClientPayloadHandlersEvent event) -> {
             event.register(QolNetwork.OpenCircuit.TYPE, (packet, context) ->
