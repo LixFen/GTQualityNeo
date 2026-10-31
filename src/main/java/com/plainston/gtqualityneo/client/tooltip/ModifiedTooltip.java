@@ -10,8 +10,8 @@ public final class ModifiedTooltip {
     private ModifiedTooltip() {}
 
     public static void append(ItemTooltipEvent event) {
-        if (!GTQualityNeo.CLIENT_CONFIG.isLoaded() || !GTQualityNeo.MODIFIED_TOOLTIPS.get()
-            || !ModifiedItems.contains(event.getItemStack())) return;
+        if (!GTQualityNeo.CLIENT_CONFIG.isLoaded() || !GTQualityNeo.MODIFIED_TOOLTIPS.get()) return;
+        if (!ModifiedItems.contains(event.getItemStack())) return;
         String text = Component.translatable("gtqualityneo.tooltip.modified").getString();
         var line = Component.empty();
         double phase = (System.nanoTime() / 1_000_000L % 6000) / 1000.0;

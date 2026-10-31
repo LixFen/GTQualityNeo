@@ -23,6 +23,7 @@ public final class CreativeTankBlock extends BaseEntityBlock {
         return level.isClientSide() ? null : createTickerHelper(type, CreativeTank.TYPE.get(), CreativeTank::tick);
     }
     @Override protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+        if (!com.plainston.gtqualityneo.GTQualityNeo.CREATIVE_TANK.get()) return InteractionResult.PASS;
         if (!level.isClientSide() && level.getBlockEntity(pos) instanceof CreativeTank tank) {
             player.openMenu(new SimpleMenuProvider((id, inventory, p) -> new CreativeTankMenu(id, inventory, tank),
                 Component.translatable("block.gtqualityneo.creative_tank")), buffer -> buffer.writeBlockPos(pos));

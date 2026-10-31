@@ -18,6 +18,8 @@ public final class GTQualityNeo {
     public static final ModConfigSpec SERVER_CONFIG, CLIENT_CONFIG;
     public static final ModConfigSpec.BooleanValue OBSTRUCTED_INTERACTION, GUI_FLUID_INTERACTION,
         SAP_BAG_EXTRACTION, HEAT_HAZMAT_IMMUNITY, TOOL_BARS, CIRCUIT_SELECTOR, UNIVERSAL_HAZMAT, JEI_WORLDGEN, DRILL_MODES, ONE_WAY_PIPES, JEI_MULTIBLOCKS, MODIFIED_TOOLTIPS, JEI_FLUID_VARIANTS, JEI_OREDICT_VARIANTS, JEI_MERGE_CRAFTING;
+    public static final ModConfigSpec.BooleanValue MOLD_SELECTOR, STORAGE_FORM, CREATIVE_TANK, FILTER_GHOST,
+        SCAFFOLD_COLLISION, HOPPER_SHAPES, JEI_MACHINE_LOOKUP;
     public static final ModConfigSpec.DoubleValue SCAFFOLD_UP, SCAFFOLD_DOWN;
 
     static {
@@ -35,6 +37,12 @@ public final class GTQualityNeo {
         SAP_BAG_EXTRACTION = builder.define("allowSapBagHopperExtraction", true);
         HEAT_HAZMAT_IMMUNITY = builder.define("heatHazmatFireImmunity", true);
         CIRCUIT_SELECTOR = builder.define("circuitSelectorGui", true);
+        MOLD_SELECTOR = builder.define("moldShapeSelector", true);
+        STORAGE_FORM = builder.define("massStorageFormSwitching", true);
+        CREATIVE_TANK = builder.comment("Enable the creative fluid tank interaction and fluid output. The registry entries remain available for existing worlds.")
+            .define("creativeTank", true);
+        SCAFFOLD_COLLISION = builder.define("scaffoldCollisionChanges", true);
+        HOPPER_SHAPES = builder.define("hopperShapeChanges", true);
         SCAFFOLD_UP = builder.defineInRange("scaffoldClimbUpSpeed",
             net.neoforged.fml.ModList.get().isLoaded("gaiablossom") ? 0.0 : 0.14, 0.0, 2.0);
         SCAFFOLD_DOWN = builder.defineInRange("scaffoldClimbDownSpeed", 0.15, 0.0, 2.0);
@@ -53,6 +61,8 @@ public final class GTQualityNeo {
             .define("jeiOreDictVariants", true);
         JEI_MERGE_CRAFTING = builder.comment("Show GT6 workbench recipes in JEI's vanilla Crafting category instead of a separate GT6 one. Applies when JEI reloads.")
             .define("jeiMergeCraftingTable", true);
+        JEI_MACHINE_LOOKUP = builder.define("jeiMachineRecipeLookup", true);
+        FILTER_GHOST = builder.define("jeiFilterGhostIngredients", true);
         CLIENT_CONFIG = builder.build();
     }
 

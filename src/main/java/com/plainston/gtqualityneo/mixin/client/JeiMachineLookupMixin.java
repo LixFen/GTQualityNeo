@@ -40,22 +40,26 @@ public abstract class JeiMachineLookupMixin {
 
     @Inject(method = {"isHandledInput", "isHandledOutput"}, at = @At("HEAD"), cancellable = true)
     private void gtqualityneo$acceptFluid(ITypedIngredient<?> ingredient, CallbackInfoReturnable<Boolean> cir) {
+        if (!GTQualityNeo.JEI_MACHINE_LOOKUP.get()) return;
         var stack = gtqualityneo$stack(ingredient);
         cir.setReturnValue(stack != null && !stack.isEmpty());
     }
 
     @Inject(method = "getRecipesForInput", at = @At("HEAD"), cancellable = true)
     private void gtqualityneo$inputs(ITypedIngredient<?> ingredient, CallbackInfoReturnable<List<Recipe>> cir) {
+        if (!GTQualityNeo.JEI_MACHINE_LOOKUP.get()) return;
         cir.setReturnValue(gtqualityneo$lookup().find(gtqualityneo$stack(ingredient), true));
     }
 
     @Inject(method = "getRecipesForOutput", at = @At("HEAD"), cancellable = true)
     private void gtqualityneo$outputs(ITypedIngredient<?> ingredient, CallbackInfoReturnable<List<Recipe>> cir) {
+        if (!GTQualityNeo.JEI_MACHINE_LOOKUP.get()) return;
         cir.setReturnValue(gtqualityneo$lookup().find(gtqualityneo$stack(ingredient), false));
     }
 
     @Inject(method = "getAllRecipes", at = @At("HEAD"), cancellable = true)
     private void gtqualityneo$all(CallbackInfoReturnable<List<Recipe>> cir) {
+        if (!GTQualityNeo.JEI_MACHINE_LOOKUP.get()) return;
         cir.setReturnValue(gtqualityneo$lookup().lazyAll());
     }
 }

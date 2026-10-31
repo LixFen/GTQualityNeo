@@ -36,7 +36,7 @@ public abstract class MassStorageFormMixin {
     private void gtquality$changeStoredForm(String tool, long remainingDurability, long quality, Entity player,
         List<String> chat, Container playerInventory, boolean sneaking, ItemStack heldStack, byte side, float hitX,
         float hitY, float hitZ, CallbackInfoReturnable<Long> cir) {
-        if (!CS.TOOL_chisel.equals(tool)) return;
+        if (!com.plainston.gtqualityneo.GTQualityNeo.STORAGE_FORM.get() || !CS.TOOL_chisel.equals(tool)) return;
         MultiTileEntityMassStorage storage = (MultiTileEntityMassStorage) (Object) this;
         if (storage.isClientSide() || (storage.mMode & CS.B[3]) != 0 || !storage.slotHas(1)) return;
 

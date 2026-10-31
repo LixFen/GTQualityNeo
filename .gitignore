@@ -4,6 +4,9 @@ build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/**/build/
 
+# Tests
+/src/test/
+
 ### IntelliJ IDEA ###
 .idea/
 *.iws

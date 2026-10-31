@@ -22,6 +22,7 @@ public final class QolEvents {
     }
 
     public static void moldClick(PlayerInteractEvent.RightClickBlock event) {
+        if (!GTQualityNeo.MOLD_SELECTOR.get()) return;
         var player = event.getEntity();
         if (event.getHand() != InteractionHand.MAIN_HAND || !player.isShiftKeyDown()
             || !MoldInteraction.isChisel(player.getMainHandItem()) || !event.getLevel().mayInteract(player, event.getPos())) return;

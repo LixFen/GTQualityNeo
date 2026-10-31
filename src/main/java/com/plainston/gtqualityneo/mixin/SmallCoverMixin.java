@@ -11,6 +11,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class SmallCoverMixin {
     @Inject(method = "shrunkBox", at = @At("HEAD"), cancellable = true)
     private void gtquality$bounds(CallbackInfoReturnable<float[]> cir) {
+        if (!com.plainston.gtqualityneo.GTQualityNeo.HOPPER_SHAPES.get()) return;
         var bounds = CollisionShapes.smallCoverBounds((TileEntityBase10ConnectorRendered) (Object) this);
         if (bounds != null) cir.setReturnValue(bounds);
     }

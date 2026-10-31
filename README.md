@@ -2,16 +2,14 @@
 
 面向 GregTech 6 NeoForge 移植版的 GTQuality 附属模组。
 
-> [!WARNING]
-> 由于GT6w正在高速开发中
-> 本模组仅供参考，个人使用
+> [!WARNING] 由于GT6w正在高速开发中，本模组仅供参考，个人使用
 
 ## Jade 联动
 
 - Jade 基础机器运行、空闲及停止状态。
 - 配方进度条、加工中的实际物品与流体产物、完成后的配方产物。
 - 物品存储，流体显示
-- 熔炼坩埚、多方块坩埚的温度、熔毁温度和内部材料；模具的生产类型、进液方向及红石控制。
+- 坩埚的温度、熔毁温度和内部材料；模具的生产类型、进液方向及红石控制。
 - 锅炉压力、效率、热量和蒸汽输出；固体、液体及流化床燃烧箱的燃料、灰烬、燃烧时间和输出。
 - 蒸汽引擎、蒸汽涡轮、液体发动机的储能、输入、输出及燃料消耗。
 - 反应堆燃料棒、剩余寿命、中子数、冷却液和估算热量；转轴、电线的实际传输量。
@@ -21,41 +19,38 @@
 
 模组需要安装在服务端和客户端；Jade 也需要双方安装才能同步机器详情。
 
-配置 `config/gtqualityneo-common.toml` 中的 `jadeIntegration=false` 可关闭本插件的全部 Jade 注册，重启生效；GT6 自带的 Jade 注册仍由 GT6 管理。
+`jadeIntegration=false` 可关闭本插件的全部 Jade 注册
 
 ## LDLib2 界面（试验）
 
-客户端安装 LDLib2 `26.1.2.43` 后，GT6 大部分GUI将变为Modern Modular UI.
+客户端安装 LDLib2 `26.1.2.43` 以及以后版本后，GT6 大部分GUI将变为Modern Modular UI，（推荐安装）
 
 ## JEI 兼容
 
 - 按类型合并了大量配方
-- 优化了配方查询
-- `gtqualityneo-client.toml` 中的 `jeiFluidVariants=false` 可关闭流体变体合并，`jeiOreDictVariants=false` 可关闭矿物词典变体合并。
+- 优化了配方查询速率
 
 ## QoL 功能
 
-迁移前的替代实现、行为差异及取舍见 [QOL_MIGRATION.md](QOL_MIGRATION.md)。
-
-- 手持凿子潜行右键空模具，分页选择形状或清空；上次选择优先显示。
-- 手持选择器电路 Shift + 右键空气或方块，打开 0–24 号选择界面；
-- 采矿电钻范围模式：潜行右键 GT6 的 `IItemGT` 方块（包含有方块实体的机器等）或无方块实体的方块切换；其他有方块实体的方块保留原交互。LV 支持单格和 3×3×1；MV 增加 3×3×2；HV 增加 3×3×3。名称显示当前模式；潜行采掘临时使用单格，额外方块沿用服务端破坏检查、掉落、耗电与耐久规则。
-- 单向流体管端口：潜行用扳手右键端口，切换“只出不进”，箭头指向输出方向；端口设置随存档保存，关闭功能时暂停限制并保留设置。
-- 基础机器 GUI 的流体槽支持GUI内交互
-- 创造流体储罐：无合成配方，通过创造物品栏或 JEI 获取；右键配置，可拖入 JEI 幻影流体、GT6 流体显示物品或点击光标流体容器选择，不消耗选择用的物品。空光标右键流体槽或点击 X 清空。
-- 储罐速率为 `0–2147483647 L/tick`，默认 `1000`；`0` 停止输出。自动输出默认关闭，开启后推送六面邻接能力；注意：不连接管道也会推送流体。
-- 按配置允许遮挡机器面交互、树脂袋侧面自动提取、GT6 全套耐热服火焰伤害免疫。全套通用防护服也具有同样的防火功能，不依赖护甲/耐久增强开关。
-- 全套通用防护服提供 20 点护甲（10 格），实际护甲属性参与减伤；脱下一件恢复原有护甲。每件最大耐久由 128 提升至 512，已有损耗和组件保持不变；关闭增强后恢复原上限，损耗超过 128 的装备可能在下次受损时损坏。
-- 凿子切换储物桶/存储器的材料形态，保留材料余量。
+- 手持凿子潜行右键模具选择形状
+- 手持选择器电路 Shift + 右键空气选号
+- 采矿电钻范围采掘
+- 允许流体管道单向传递
+- 机器 GUI 的流体槽支持 GUI 内交互
+- 创造流体储罐
+- 按配置允许遮挡机器面交互
+- 树脂袋允许自动化
+- GT6 全套耐热服火焰伤害免疫
+- 全套通用防护服提供 20 点护甲
+- 凿子切换储物桶/存储器的材料形态
 - 视角控制脚手架额外爬升/下降速度；移除远侧两根立柱碰撞。
 - 未含水的闭合活板门可作为燃烧箱的进气口；
-- 现代漏斗组合选取/碰撞形状，含 Cover；持扳手、活动扳手或螺丝刀时整块选取。小型火把/压力阀 Cover 使用实际合并边界。
-- GT6 工具 GUI 连续耐久/充能双状态条；电池显示能量条。由 `gtmToolBars` 控制；识别 DuraDisplay 时避让。
-- JEI 工作台页面合并：GT6 工作台配方默认显示在 JEI 原版“合成”分类中，不再单独显示 GT6 的“Crafting Table”分类。
-- 物品及流体过滤器支持从 JEI 拖入幻影条件，不消耗物品或改变光标堆叠；流体过滤支持 GT6 流体显示物品、JEI 流体及流体容器。悬停过滤槽显示提示。
-- JEI 多方块结构预览：对控制器查询配方或用途，对部件查询用途。支持拖动旋转、滚轮缩放、Shift + 滚轮切层；点击层按钮在逐层和完整结构间循环，减号/加号按钮缩放，回转按钮重置视角；各按钮有独立边框、悬停反馈和操作提示。模型中的部件支持悬停名称、左键查询配方及右键查询用途，底部为可滚动的材料清单。采用 GregTech Modern 的独立结构分类与交互视图思路，通过 GT6 原生结构检查生成并验证示例，不依赖 GTM 或 BlockRenderer6343。
-- Jade 多方块端口提示：按住 Jade 的“显示详情”键（默认左 Shift）并指向部件的不同面，显示可输入/提取的物品、流体、能量类型和机器主动输出设置；包含蒸馏塔、发酵罐、大锅炉、聚变反应堆的特殊端口规则。
-- JEI 的 GT6 资源生成查询覆盖岩层矿、岩层交界、深板岩、小型矿、基岩矿、旧式大型矿脉、矿团、Coltan、流体矿床及地表资源。矿石可查询配方和用途，宿主岩石、指示花及流体可查询关联页面；预览包含伴生矿与几率。形态自动轮换，Shift 暂停，悬停图标滚轮切换；预览网格和长说明可滚动，长群系列表可展开，顶部入口可查看所有页面。高度同时显示旧坐标配置和当前维度的 GT6 换算参考，次数按现代世界高度缩放。页面读取客户端规则，不扫描矿床；当前维度换算参考不代表该规则在此维度启用，具体看维度列表，服务端配置和实际地形也可能不同。
+- 现代漏斗选取/碰撞形状箱
+- 更现代的能量条，电池显示能量
+- JEI 工作台页面合并
+- 物品及流体过滤器支持从 JEI 拖入幻影条件
+- JEI 多方块结构预览
+- JEI 的 GT6 资源生成查询
 
 
 | 配置 | 文件类型 | 默认值 |
@@ -69,40 +64,38 @@
 | `allowSapBagHopperExtraction` | 同上 | `true` |
 | `heatHazmatFireImmunity` | 同上 | `true` |
 | `circuitSelectorGui` | 同上 | `true` |
-| `universalHazmatEnhancement` | `gtqualityneo-common.toml` | `true`，两端保持一致，修改后重启 |
-| `jeiWorldgenDisplay` | `gtqualityneo-client.toml` | `true`，重启生效 |
-| `jeiMultiblockPreview` | `gtqualityneo-client.toml` | `true`，重启生效 |
-| `jeiFluidVariants` | 同上 | `true`，合并等价流体输入变体 |
-| `jeiOreDictVariants` | 同上 | `true`，合并同一 Any 材料组的物品输入变体 |
-| `jeiMergeCraftingTable` | 同上 | `true`，GT6 工作台配方并入原版合成分类，JEI 重载后生效 |
-| `scaffoldClimbUpSpeed` | 同上 | `0.14`；检测到 `gaiablossom` 时默认 `0` |
+| `moldShapeSelector` | 同上 | `true` |
+| `massStorageFormSwitching` | 同上 | `true` |
+| `creativeTank` | 同上 | `true` |
+| `scaffoldCollisionChanges` | 同上 | `true` |
+| `hopperShapeChanges` | 同上 | `true` |
+| `jeiFilterGhostIngredients` | 同上 | `true` |
+| `universalHazmatEnhancement` | `gtqualityneo-common.toml` | `true` |
+| `jeiWorldgenDisplay` | `gtqualityneo-client.toml` | `true` |
+| `jeiMultiblockPreview` | `gtqualityneo-client.toml` | `true` |
+| `jeiFluidVariants` | 同上 | `true` |
+| `jeiOreDictVariants` | 同上 | `true` |
+| `jeiMergeCraftingTable` | 同上 | `true` |
+| `jeiMachineRecipeLookup` | 同上 | `true` |
+| `scaffoldClimbUpSpeed` | 同上 | `0.14` |
 | `scaffoldClimbDownSpeed` | 同上 | `0.15` |
 
 
-## 修改标记提示
-
-客户端独立功能：为电钻、凿子、电路、模具、流体管、红石线、储物桶/存储器、树脂袋、脚手架、漏斗、燃烧箱、活板门、防护服、过滤器、高级工作台以及小型火把/压力阀 Cover 等定向修改对象添加动态彩虹提示：**这个方块已经被GTQuality修改过！**
-
-只参与通用 GUI、工具状态条、Jade 或 JEI 显示的对象不因此添加标记；本模组新增物品也不使用此修改标记。标记表示该对象属于修改范围，不随各项功能开关隐藏。可在 `gtqualityneo-client.toml` 中设置 `modifiedItemTooltips=false` 单独关闭。
-
 ## AE2 联动
 
-安装适用于 Minecraft 26.1.2 的 AE2（开发版本为 `26.1.13-beta`）及其 GuideME 依赖后，新增 **ME 粉末归并存储元件**。未安装 AE2 时不注册该物品，其他功能照常加载。
+新增 **ME 粉末归并存储元件**
 
-- 在创造物品栏的工具与实用物品分类或 JEI 获取，无合成配方。
-- 接受标准粉、小堆粉、小撮粉、1/72 粉及粉末块，按 GT6 材料量保存；容量沿用当前 GTQuality 源码的 **63 种材料，每种 1,000,000 个标准粉**，不足一个输出物品的余量保留在元件内。
-- 在元件工作台中标记输出形态，同种材料最靠前的有效标记生效；其他材料默认使用标准粉。ME 网络仅显示和允许提取选定形态。
-- 安装反相卡后，仅允许已标记材料继续输入，已有其他材料仍可提取。带自定义名称等附加组件的粉末不会被归并。
+- 储物桶/存储器的元件形态，可在元件工作台高级配置
 
 ## FTB Quests 联动
 
-安装 FTB Quests 后，GT6W 物品任务在默认的 `match_components=none` 模式下匹配 **Item + subtype**，忽略电量、磨损、自定义名称及其他组件差异，避免同一形态的不同材料被当作同一种物品。未携带 subtype 的物品按 `0` 处理，不使用旧配方的通配 meta 规则。
+安装 FTB Quests 后，GT6W 物品任务在默认的 `match_components=none` 模式下匹配 **Item + subtype**，忽略其他组件差异
 
-任务手动选择 `fuzzy` 或 `strict` 时，保留 FTB Quests 原有组件匹配规则；非 GT6W 物品和过滤器任务也保持原有行为。已有 `strict` 任务若需要放宽匹配，应改为 `none`。FTB Quests 为可选依赖，未安装时跳过联动；测试版本为 FTB Quests `26.1.2.9`。
+任务手动选择 `fuzzy` 或 `strict` 时，保留 FTB Quests 原有组件匹配规则；非 GT6W 物品和过滤器任务也保持原有行为。已有 `strict` 任务若需要放宽匹配，应改为 `none`。
 
 ## 构建
 
-开发环境默认使用 [GT6 alpha.16 官方发布版](https://github.com/wolfram0108/gregtech6_w/releases/tag/v6.0.0-alpha.16)。将 `gregtech6-6.0.0-alpha.16.jar` 放入本项目 `libs/`，然后运行：
+开发环境默认使用 [GT6 alpha.17](https://github.com/wolfram0108/gregtech6_w/releases/tag/v6.0.0-alpha.17)。将 `gregtech6-6.0.0-alpha.17.jar` 放入本项目 `libs/`，然后运行：
 
 ```powershell
 .\gradlew.bat build
@@ -111,13 +104,13 @@
 也可直接指定依赖位置：
 
 ```powershell
-.\gradlew.bat build '-PgregtechJar=D:/CodeReference/gregtech6_w/build/libs/gregtech6-6.0.0-alpha.16.jar'
+.\gradlew.bat build '-PgregtechJar=D:/CodeReference/gregtech6_w/build/libs/gregtech6-6.0.0-alpha.17.jar'
 ```
 
 如需单独指定开发运行时依赖：
 
 ```powershell
-.\gradlew.bat runClient '-PgregtechRuntimeJar=libs/gregtech6-6.0.0-alpha.16.jar'
+.\gradlew.bat runClient '-PgregtechRuntimeJar=libs/gregtech6-6.0.0-alpha.17.jar'
 ```
 
 ## 来源

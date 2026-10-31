@@ -45,7 +45,9 @@ public final class CreativeTank extends BlockEntity {
         DataComponentType.<Settings>builder().persistent(Settings.CODEC).networkSynchronized(Settings.STREAM_CODEC).build());
     static {
         TABS.register("main", () -> CreativeModeTab.builder().title(Component.translatable("itemGroup.gtqualityneo"))
-            .icon(() -> new ItemStack(ITEM.get())).displayItems((parameters, output) -> output.accept(ITEM.get())).build());
+            .icon(() -> new ItemStack(ITEM.get())).displayItems((parameters, output) -> {
+                if (GTQualityNeo.CREATIVE_TANK.get()) output.accept(ITEM.get());
+            }).build());
     }
 
     private static final class TankType extends BlockEntityType<CreativeTank> {
@@ -120,6 +122,7 @@ public final class CreativeTank extends BlockEntity {
         @Override public int insert(int index, FluidResource resource, int amount, TransactionContext transaction) { java.util.Objects.checkIndex(index, 1); return 0; }
         @Override public int extract(int index, FluidResource resource, int amount, TransactionContext transaction) {
             java.util.Objects.checkIndex(index, 1);
+            if (!GTQualityNeo.CREATIVE_TANK.get()) return 0;
             if (resource.isEmpty() || !resource.equals(getResource(index)) || amount <= 0) return 0;
             int moved = Math.min(amount, available());
             if (moved > 0) { budget.updateSnapshots(transaction); emitted += moved; }
@@ -128,7 +131,7 @@ public final class CreativeTank extends BlockEntity {
     };
 
     public static void tick(net.minecraft.world.level.Level level, BlockPos pos, BlockState state, CreativeTank tank) {
-        if (level.isClientSide() || !tank.settings.automatic() || tank.settings.fluid().isEmpty()) return;
+        if (!GTQualityNeo.CREATIVE_TANK.get() || level.isClientSide() || !tank.settings.automatic() || tank.settings.fluid().isEmpty()) return;
         FluidResource resource = tank.handler.getResource(0);
         for (Direction side : Direction.values()) {
             int available = tank.available();

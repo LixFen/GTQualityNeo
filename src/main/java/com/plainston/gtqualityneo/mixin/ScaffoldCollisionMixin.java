@@ -27,6 +27,8 @@ public abstract class ScaffoldCollisionMixin {
         remap = false)
     private boolean gtquality$addCollisionBox(MultiTileEntityScaffold scaffold, AABB query,
         List<AABB> collisions, double minX, double minY, double minZ, double maxX, double maxY, double maxZ) {
+        if (!com.plainston.gtqualityneo.GTQualityNeo.SCAFFOLD_COLLISION.get())
+            return scaffold.box(query, collisions, minX, minY, minZ, maxX, maxY, maxZ);
         byte design = scaffold.getVisualData();
         if (design == 1 || design == 2) {
             boolean cornerX = (minX == 0.0D && maxX == 0.0625D) || (minX == 0.9375D && maxX == 1.0D);

@@ -100,13 +100,14 @@ public final class QolClient {
         if (!(event.getItemStack().getItem() instanceof MultiTileEntityItemInternal item)) return;
         var container = item.mBlock.mMultiTileEntityRegistry.getNewTileEntityContainer(event.getItemStack());
         if (container == null) return;
-        if (container.mTileEntity.getClass() == MultiTileEntityMold.class)
+        if (GTQualityNeo.MOLD_SELECTOR.get() && container.mTileEntity.getClass() == MultiTileEntityMold.class)
             event.getToolTip().add(Component.translatable("gtqualityneo.tooltip.mold").withStyle(net.minecraft.ChatFormatting.DARK_GRAY));
-        else if (container.mTileEntity instanceof MultiTileEntityMassStorage)
+        else if (GTQualityNeo.STORAGE_FORM.get() && container.mTileEntity instanceof MultiTileEntityMassStorage)
             event.getToolTip().add(Component.translatable("gtqualityneo.tooltip.storage").withStyle(net.minecraft.ChatFormatting.DARK_GRAY));
     }
 
     private static void filterTooltip(ScreenEvent.Render.Foreground event) {
+        if (!GTQualityNeo.FILTER_GHOST.get()) return;
         if (!(event.getScreen() instanceof AbstractContainerScreen<?> screen)) return;
         double x = event.getMouseX() - screen.getLeftPos(), y = event.getMouseY() - screen.getTopPos();
         for (var slot : screen.getMenu().slots) if (com.plainston.gtqualityneo.qol.FilterGhost.isFilterSlot(screen.getMenu(), slot.index)
