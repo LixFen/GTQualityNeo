@@ -1,4 +1,4 @@
-package com.plainston.gtqualityneo.client;
+package com.plainston.gtqualityneo.client.ui;
 
 /** Machine inventory indexes include the reserved special slot even when no slot is exposed for it. */
 public record MachineLayout(int inputItems, int outputItems, int inputFluids, int outputFluids, boolean special) {

@@ -1,4 +1,4 @@
-package com.plainston.gtqualityneo.client;
+package com.plainston.gtqualityneo.client.ui;
 
 /** Pixel crop of GT6's 20x18 progress overlay, using its original quantization and animation cycles. */
 public final class MachineProgress {

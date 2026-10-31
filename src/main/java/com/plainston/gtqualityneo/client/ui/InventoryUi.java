@@ -1,4 +1,4 @@
-package com.plainston.gtqualityneo.client;
+package com.plainston.gtqualityneo.client.ui;
 
 import com.lowdragmc.lowdraglib2.gui.holder.IModularUIHolderMenu;
 import com.lowdragmc.lowdraglib2.gui.texture.ItemStackTexture;

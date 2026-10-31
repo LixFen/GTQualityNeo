@@ -1,4 +1,4 @@
-package com.plainston.gtqualityneo.client;
+package com.plainston.gtqualityneo.client.render;
 
 import gregapi.old.Textures;
 import gregapi.render.BlockTextureDefault;

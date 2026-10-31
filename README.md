@@ -27,6 +27,16 @@
 
 客户端安装 LDLib2 `26.1.2.43` 后，GT6 大部分GUI将变为Modern Modular UI.
 
+## JEI 机器配方
+
+- 客户端在 GT6 向 `RecipeMap` 成功注册配方时即维护工艺分组，删除或重建配方表时同步更新。
+- 注册查重先按必需输入筛选候选，减少砧的空槽标记、装箱机的电路和木板等共享输入导致的大量重复比较；最终冲突判断仍由 GT6 执行。
+- 缓存动态配方的 JEI 槽位信息，配方改动、资源重载及 JEI 重启后失效；配方隐藏和原料可见性仍实时检查。
+- 所有 GT6 机器共用查询缓存；配方通过 GT6 API 增删或重建时失效。保留 GT6 的物品重定向、材料关联和按需生成规则；未经过注册 API 的虚拟展示配方保留即时处理。
+- 整类查询一次遍历所有配方生成器，避免删除生成器时跳项；同次查询产生的配置写入合并为每个文件一次。启动时只检查类别是否为空，不提前生成所有机器配方。
+- 仅一个流体输入不同、用量和其余物品输入、产物、概率、耗时、功率均相同的配方，合并为一张卡片，流体槽轮播替代选项。多个流体输入及不同效率的配方保持独立，实际机器配方不变。
+- `gtqualityneo-client.toml` 中的 `jeiFluidVariants=false` 可关闭流体变体合并。首次查看某类机器仍需执行 GT6 的配方生成，耗时取决于该类配方数量。
+
 ## QoL 功能
 
 迁移前的替代实现、行为差异及取舍见 [QOL_MIGRATION.md](QOL_MIGRATION.md)。
@@ -66,6 +76,7 @@
 | `universalHazmatEnhancement` | `gtqualityneo-common.toml` | `true`，两端保持一致，修改后重启 |
 | `jeiWorldgenDisplay` | `gtqualityneo-client.toml` | `true`，重启生效 |
 | `jeiMultiblockPreview` | `gtqualityneo-client.toml` | `true`，重启生效 |
+| `jeiFluidVariants` | 同上 | `true`，合并等价流体输入变体 |
 | `scaffoldClimbUpSpeed` | 同上 | `0.14`；检测到 `gaiablossom` 时默认 `0` |
 | `scaffoldClimbDownSpeed` | 同上 | `0.15` |
 

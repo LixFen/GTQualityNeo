@@ -2,7 +2,7 @@ package com.plainston.gtqualityneo.integration.jei;
 
 import static org.junit.jupiter.api.Assertions.*;
 import java.util.ArrayList;
-import com.plainston.gtqualityneo.client.MachineLayout;
+import com.plainston.gtqualityneo.client.ui.MachineLayout;
 import org.junit.jupiter.api.Test;
 
 class RecipeLayoutTest {

@@ -1,7 +1,7 @@
 package com.plainston.gtqualityneo.integration;
 
 import com.plainston.gtqualityneo.GTQualityNeo;
-import com.plainston.gtqualityneo.client.CreativeTankScreen;
+import com.plainston.gtqualityneo.client.screen.CreativeTankScreen;
 import gregapi.gui.ContainerCommon;
 import gregapi.gui.Slot_Base;
 import gregapi.jei.GT6_JEI_CraftingCategory;
@@ -29,7 +29,10 @@ import java.util.Optional;
 public final class GTQualityJeiPlugin implements IModPlugin {
     private mezz.jei.api.runtime.IJeiRuntime runtime;
     @Override public void onRuntimeAvailable(mezz.jei.api.runtime.IJeiRuntime runtime) { this.runtime = runtime; }
-    @Override public void onRuntimeUnavailable() { runtime = null; }
+    @Override public void onRuntimeUnavailable() {
+        runtime = null;
+        com.plainston.gtqualityneo.integration.jei.DynamicRecipeIngredients.invalidateResources();
+    }
     @Override public void registerCategories(mezz.jei.api.registration.IRecipeCategoryRegistration registration) {
         if (GTQualityNeo.JEI_MULTIBLOCKS.get()) registration.addRecipeCategories(new com.plainston.gtqualityneo.integration.multiblock.MultiblockCategory(registration.getJeiHelpers(), () -> runtime));
         if (GTQualityNeo.JEI_WORLDGEN.get()) registration.addRecipeCategories(

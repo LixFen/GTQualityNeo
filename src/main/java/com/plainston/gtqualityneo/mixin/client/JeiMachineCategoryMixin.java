@@ -1,6 +1,7 @@
 package com.plainston.gtqualityneo.mixin.client;
 
 import com.plainston.gtqualityneo.integration.jei.MachineRecipeDisplay;
+import com.plainston.gtqualityneo.integration.jei.DynamicRecipeIngredients;
 import gregapi.recipes.Recipe;
 import gregapi.recipes.Recipe.RecipeMap;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
@@ -22,8 +23,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Pseudo
 @Mixin(targets = "gregapi.jei.GT6_JEI_RecipeCategory", remap = false)
-public abstract class JeiMachineCategoryMixin {
+public abstract class JeiMachineCategoryMixin implements DynamicRecipeIngredients.Category {
     @Shadow @Final private RecipeMap mMap;
+
+    @Override public RecipeMap gtqualityneo$recipeMap() { return mMap; }
 
     @ModifyConstant(method = "<init>", constant = @Constant(intValue = 161, ordinal = 0))
     private static int gtqualityneo$height(int original, RecipeMap map, RecipeType<Recipe> type, IGuiHelper helper) {

@@ -1,4 +1,4 @@
-package com.plainston.gtqualityneo.client;
+package com.plainston.gtqualityneo.client.tooltip;
 
 import com.plainston.gtqualityneo.GTQualityNeo;
 import com.plainston.gtqualityneo.qol.ModifiedItems;

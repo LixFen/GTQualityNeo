@@ -1,4 +1,4 @@
-package com.plainston.gtqualityneo.client;
+package com.plainston.gtqualityneo.client.render;
 
 import gregapi.block.multitileentity.MultiTileEntityItemInternal;
 import gregapi.data.FL;

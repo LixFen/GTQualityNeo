@@ -1,4 +1,4 @@
-package com.plainston.gtqualityneo.client;
+package com.plainston.gtqualityneo.client.render;
 
 import com.plainston.gtqualityneo.GTQualityNeo;
 import gregapi.data.TD;

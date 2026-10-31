@@ -17,7 +17,7 @@ public final class GTQualityNeo {
     public static final ModConfigSpec.BooleanValue JADE_INTEGRATION;
     public static final ModConfigSpec SERVER_CONFIG, CLIENT_CONFIG;
     public static final ModConfigSpec.BooleanValue OBSTRUCTED_INTERACTION, GUI_FLUID_INTERACTION,
-        SAP_BAG_EXTRACTION, HEAT_HAZMAT_IMMUNITY, TOOL_BARS, CIRCUIT_SELECTOR, UNIVERSAL_HAZMAT, JEI_WORLDGEN, DRILL_MODES, ONE_WAY_PIPES, JEI_MULTIBLOCKS, MODIFIED_TOOLTIPS;
+        SAP_BAG_EXTRACTION, HEAT_HAZMAT_IMMUNITY, TOOL_BARS, CIRCUIT_SELECTOR, UNIVERSAL_HAZMAT, JEI_WORLDGEN, DRILL_MODES, ONE_WAY_PIPES, JEI_MULTIBLOCKS, MODIFIED_TOOLTIPS, JEI_FLUID_VARIANTS;
     public static final ModConfigSpec.DoubleValue SCAFFOLD_UP, SCAFFOLD_DOWN;
 
     static {
@@ -47,6 +47,8 @@ public final class GTQualityNeo {
             .define("gtmToolBars", true);
         JEI_WORLDGEN = builder.comment("Display configured GT6 resource generation rules in JEI. Restart required.")
             .define("jeiWorldgenDisplay", true);
+        JEI_FLUID_VARIANTS = builder.comment("Combine machine recipes differing only in one fluid input with the same amount, outputs, duration and power.")
+            .define("jeiFluidVariants", true);
         CLIENT_CONFIG = builder.build();
     }
 

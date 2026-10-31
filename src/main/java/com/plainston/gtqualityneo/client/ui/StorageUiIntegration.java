@@ -1,4 +1,4 @@
-package com.plainston.gtqualityneo.client;
+package com.plainston.gtqualityneo.client.ui;
 
 import gregapi.gui.ContainerClient;
 import com.plainston.gtqualityneo.qol.StorageMenus;
@@ -8,10 +8,10 @@ import net.neoforged.neoforge.client.event.ScreenEvent;
 import net.neoforged.neoforge.common.NeoForge;
 
 /** Loaded only on the client when LDLib2 is installed. Keeps GT6's original menu and slot identities. */
-final class StorageUiIntegration {
+public final class StorageUiIntegration {
     private StorageUiIntegration() {}
 
-    static void register() {
+    public static void register() {
         NeoForge.EVENT_BUS.addListener(StorageUiIntegration::opening);
     }
 

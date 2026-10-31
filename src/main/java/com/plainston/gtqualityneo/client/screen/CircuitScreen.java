@@ -1,4 +1,4 @@
-package com.plainston.gtqualityneo.client;
+package com.plainston.gtqualityneo.client.screen;
 
 import com.plainston.gtqualityneo.qol.QolNetwork;
 import net.minecraft.client.gui.GuiGraphicsExtractor;

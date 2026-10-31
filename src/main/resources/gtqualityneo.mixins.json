@@ -22,6 +22,12 @@
   },
   "client": [
     "client.JeiMachineCategoryMixin",
+    "client.JeiDynamicIngredientsMixin",
+    "client.JeiDynamicIngredientsExtractMixin",
+    "client.JeiMachineLookupMixin",
+    "client.JeiRecipeMapRevisionMixin",
+    "client.RecipeRegistrationCollisionMixin",
+    "client.JeiRecipeConfigMixin",
     "client.ToolModelMixin",
     "client.GuiGraphicsAccessor"
   ]

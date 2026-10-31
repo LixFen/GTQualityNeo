@@ -1,6 +1,6 @@
 package com.plainston.gtqualityneo.integration.jei;
 
-import com.plainston.gtqualityneo.client.MachineLayout;
+import com.plainston.gtqualityneo.client.ui.MachineLayout;
 
 /** A recipe template independent of the machine GUI texture and its pixel coordinates. */
 public record RecipeLayout(int inputItems, int outputItems, int inputFluids, int outputFluids, int infoHeight) {

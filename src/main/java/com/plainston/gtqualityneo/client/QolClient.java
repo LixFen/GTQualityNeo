@@ -1,5 +1,12 @@
 package com.plainston.gtqualityneo.client;
 
+import com.plainston.gtqualityneo.client.render.BatteryBars;
+import com.plainston.gtqualityneo.client.render.ToolBars;
+import com.plainston.gtqualityneo.client.screen.CircuitScreen;
+import com.plainston.gtqualityneo.client.screen.CreativeTankScreen;
+import com.plainston.gtqualityneo.client.screen.MoldScreen;
+import com.plainston.gtqualityneo.client.tooltip.ModifiedTooltip;
+import com.plainston.gtqualityneo.client.ui.StorageUiIntegration;
 import com.plainston.gtqualityneo.GTQualityNeo;
 import com.plainston.gtqualityneo.fluid.CreativeTankMenu;
 import com.plainston.gtqualityneo.qol.QolNetwork;
@@ -27,6 +34,8 @@ public final class QolClient {
     private static Object consumedFluidScreen;
 
     public QolClient(IEventBus bus) {
+        NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.client.event.ClientResourceLoadFinishedEvent event) ->
+            com.plainston.gtqualityneo.integration.jei.DynamicRecipeIngredients.invalidateResources());
         if (net.neoforged.fml.ModList.get().isLoaded("ldlib2"))
             StorageUiIntegration.register();
         bus.addListener((net.neoforged.neoforge.client.event.RegisterPictureInPictureRenderersEvent event) ->

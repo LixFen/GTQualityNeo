@@ -1,4 +1,4 @@
-package com.plainston.gtqualityneo.client;
+package com.plainston.gtqualityneo.client.ui;
 
 /** Coordinates are slot borders; vanilla Slot coordinates refer to the item one pixel inside. */
 record StorageLayout(int slots) {

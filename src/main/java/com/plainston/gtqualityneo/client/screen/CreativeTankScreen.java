@@ -1,4 +1,4 @@
-package com.plainston.gtqualityneo.client;
+package com.plainston.gtqualityneo.client.screen;
 
 import com.plainston.gtqualityneo.fluid.CreativeTankMenu;
 import com.plainston.gtqualityneo.qol.QolNetwork;

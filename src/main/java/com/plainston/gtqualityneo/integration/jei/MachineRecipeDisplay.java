@@ -1,6 +1,6 @@
 package com.plainston.gtqualityneo.integration.jei;
 
-import com.plainston.gtqualityneo.client.MachineProgress;
+import com.plainston.gtqualityneo.client.ui.MachineProgress;
 import gregapi.data.FL;
 import gregapi.data.LH;
 import gregapi.jei.GT6_JEI_RecipeCategory;
@@ -59,8 +59,8 @@ public final class MachineRecipeDisplay {
                     stack.getCount() > 1 ? "gtqualityneo.jei.machine.chance_each" : "gtqualityneo.jei.machine.chance", text)));
             }
         }
-        fluids(builder, layout, recipe.mFluidInputs, false, map.mUseBucketSizeIn);
-        fluids(builder, layout, recipe.mFluidOutputs, true, map.mUseBucketSizeOut);
+        fluids(builder, layout, recipe, false, map.mUseBucketSizeIn);
+        fluids(builder, layout, recipe, true, map.mUseBucketSizeOut);
         if (recipe.mSpecialItems instanceof ItemStack special && ST.valid(special))
             slot(builder, false, layout.special(), "special").add(special.copy());
     }
@@ -71,17 +71,21 @@ public final class MachineRecipeDisplay {
             position.x() + 1, position.y() + 1).setSlotName(name);
     }
 
-    private static void fluids(IRecipeLayoutBuilder builder, RecipeLayout layout, FluidStack[] fluids,
+    private static void fluids(IRecipeLayoutBuilder builder, RecipeLayout layout, Recipe recipe,
                                boolean output, boolean bucketScale) {
+        FluidStack[] fluids = output ? recipe.mFluidOutputs : recipe.mFluidInputs;
         int count = output ? layout.outputFluids() : layout.inputFluids();
         var role = output ? RecipeIngredientRole.OUTPUT : RecipeIngredientRole.INPUT;
         for (int i = 0; i < count; i++) {
             var slot = slot(builder, output, layout.slot(output, true, i), (output ? "output" : "input") + "/fluid/" + i);
             if (i >= fluids.length || fluids[i] == null || fluids[i].isEmpty()) continue;
-            // GT6's display stack carries amount, bucket scaling and the full material/fluid tooltip.
-            var display = FL.display(fluids[i], true, false, bucketScale);
-            if (display != null) slot.add(display);
-            builder.addInvisibleIngredients(role).add(NeoForgeTypes.FLUID_STACK, fluids[i].copy());
+            var options = output ? List.of(fluids[i]) : RecipeVariants.inputOptions(recipe, i);
+            for (var fluid : options) {
+                // Each option keeps GT6's amount, bucket scaling and full material/fluid tooltip.
+                var display = FL.display(fluid, true, false, bucketScale);
+                if (display != null) slot.add(display);
+                builder.addInvisibleIngredients(role).add(NeoForgeTypes.FLUID_STACK, fluid.copy());
+            }
         }
     }
 

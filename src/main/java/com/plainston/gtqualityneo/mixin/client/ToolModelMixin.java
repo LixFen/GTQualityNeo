@@ -1,6 +1,6 @@
 package com.plainston.gtqualityneo.mixin.client;
 
-import com.plainston.gtqualityneo.client.ToolBars;
+import com.plainston.gtqualityneo.client.render.ToolBars;
 import gregapi.render.GT6ItemModel;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;

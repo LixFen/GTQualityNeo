@@ -90,6 +90,19 @@ class MachineRecipeDisplayTest {
         assertFalse(MachineRecipeDisplay.info(RM.Mixer, recipe).isEmpty());
     }
 
+    @Test void equivalentFluidOptionsAreVisibleAndSearchable() {
+        var water = MachineRecipeLookupTest.recipe(new FluidStack(Fluids.WATER, 100));
+        var lava = MachineRecipeLookupTest.recipe(new FluidStack(Fluids.LAVA, 100));
+        var page = RecipeVariants.group(List.of(water, lava)).getFirst();
+        var recorder = new Recorder();
+        MachineRecipeDisplay.setRecipe(RM.Bath, recorder.builder(), page);
+        assertEquals(2, recorder.slots.get("input/fluid/0").items.size());
+        assertEquals(2, recorder.nativeFluids.size());
+        assertTrue(recorder.nativeFluids.stream().anyMatch(fluid -> fluid.getFluid() == Fluids.WATER));
+        assertTrue(recorder.nativeFluids.stream().anyMatch(fluid -> fluid.getFluid() == Fluids.LAVA));
+        assertTrue(recorder.nativeFluids.stream().allMatch(fluid -> fluid.getAmount() == 100));
+    }
+
     @Test void textureCropsMatchTheOriginalMachineMenuCoordinates() {
         var player = FakePlayerFactory.getMinecraft(server.overworld());
         for (var map : RecipeMap.RECIPE_MAP_LIST) {

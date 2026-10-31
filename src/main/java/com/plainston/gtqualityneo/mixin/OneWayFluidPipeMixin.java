@@ -17,7 +17,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import com.plainston.gtqualityneo.GTQualityNeo;
-import com.plainston.gtqualityneo.client.PipeFlowTexture;
+import com.plainston.gtqualityneo.client.render.PipeFlowTexture;
 
 import gregapi.data.CS;
 import gregapi.render.ITexture;
