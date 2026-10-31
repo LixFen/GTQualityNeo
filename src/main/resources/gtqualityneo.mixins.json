@@ -21,6 +21,7 @@
     "defaultRequire": 1
   },
   "client": [
+    "client.JeiMachineCategoryMixin",
     "client.ToolModelMixin",
     "client.GuiGraphicsAccessor"
   ]

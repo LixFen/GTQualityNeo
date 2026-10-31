@@ -123,3 +123,10 @@ type="optional"
 versionRange="[26.1.2.9,26.2)"
 ordering="AFTER"
 side="BOTH"
+
+[[dependencies.${mod_id}]]
+modId="ldlib2"
+type="optional"
+versionRange="[26.1.2.43,26.2)"
+ordering="AFTER"
+side="CLIENT"

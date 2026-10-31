@@ -23,6 +23,10 @@
 
 配置 `config/gtqualityneo-common.toml` 中的 `jadeIntegration=false` 可关闭本插件的全部 Jade 注册，重启生效；GT6 自带的 Jade 注册仍由 GT6 管理。
 
+## LDLib2 界面（试验）
+
+客户端安装 LDLib2 `26.1.2.43` 后，GT6 大部分GUI将变为Modern Modular UI.
+
 ## QoL 功能
 
 迁移前的替代实现、行为差异及取舍见 [QOL_MIGRATION.md](QOL_MIGRATION.md)。

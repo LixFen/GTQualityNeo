@@ -1,4 +1,11 @@
 {
+  "gtqualityneo.jei.machine.chance": "Chance: %s",
+  "gtqualityneo.jei.machine.chance_each": "Chance: %s each",
+  "gtqualityneo.machine.input": "Input",
+  "gtqualityneo.machine.output": "Output",
+  "gtqualityneo.machine.fluid_input": "Fluid input",
+  "gtqualityneo.machine.fluid_output": "Fluid output",
+  "gtqualityneo.machine.recipes": "Click to view recipes",
   "config.jade.plugin_gtqualityneo": "GTQualityNeo",
   "config.jade.plugin_gtqualityneo.machine_details": "GT6 machine details",
   "gtqualityneo.jade.state": "State",

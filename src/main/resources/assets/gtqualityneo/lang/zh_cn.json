@@ -1,4 +1,11 @@
 {
+  "gtqualityneo.jei.machine.chance": "产出概率：%s",
+  "gtqualityneo.jei.machine.chance_each": "每个产物的概率：%s",
+  "gtqualityneo.machine.input": "输入",
+  "gtqualityneo.machine.output": "输出",
+  "gtqualityneo.machine.fluid_input": "流体输入",
+  "gtqualityneo.machine.fluid_output": "流体输出",
+  "gtqualityneo.machine.recipes": "点击查看配方",
   "config.jade.plugin_gtqualityneo": "GTQualityNeo",
   "config.jade.plugin_gtqualityneo.machine_details": "GT6 机器详情",
   "gtqualityneo.jade.state": "状态",

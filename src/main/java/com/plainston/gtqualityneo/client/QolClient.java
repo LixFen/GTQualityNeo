@@ -27,6 +27,8 @@ public final class QolClient {
     private static Object consumedFluidScreen;
 
     public QolClient(IEventBus bus) {
+        if (net.neoforged.fml.ModList.get().isLoaded("ldlib2"))
+            StorageUiIntegration.register();
         bus.addListener((net.neoforged.neoforge.client.event.RegisterPictureInPictureRenderersEvent event) ->
             event.register(com.plainston.gtqualityneo.integration.multiblock.StructureRenderState.class,
                 com.plainston.gtqualityneo.integration.multiblock.StructureRenderer::new));
