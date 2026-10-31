@@ -39,9 +39,10 @@ public final class MachineRecipeDisplay {
         var layout = layout(map);
         for (int i = 0; i < map.mInputItemsCount; i++) {
             var slot = slot(builder, false, layout.slot(false, false, i), "input/item/" + i);
-            var stack = recipe.getRepresentativeInput(i);
-            if (stack == null) continue;
-            slot.add(GT6_JEI_RecipeCategory.shown(stack));
+            var options = RecipeVariants.itemOptions(recipe, i);
+            if (options.isEmpty()) continue;
+            var stack = options.getFirst();
+            for (var option : options) slot.add(GT6_JEI_RecipeCategory.shown(option));
             if (ST.size(stack) == 0)
                 slot.addRichTooltipCallback((view, tooltip) -> tooltip.add(Component.literal(
                     LH.Chat.BLINKING_CYAN + LH.tt("Does not get consumed in the process"))));

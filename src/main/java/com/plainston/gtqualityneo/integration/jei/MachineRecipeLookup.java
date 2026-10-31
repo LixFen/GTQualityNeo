@@ -14,29 +14,29 @@ import java.util.List;
 import java.util.Map;
 import java.util.Spliterator;
 import java.util.Spliterators;
-import java.util.function.BooleanSupplier;
+import java.util.function.Supplier;
 import java.util.function.Consumer;
 
 /** Per-JEI-lifecycle caches; focused lookups retain GT6's redirects and on-demand handlers. */
 public final class MachineRecipeLookup {
     private final RecipeMap map;
     private final RegisteredRecipeVariants variants;
-    private final BooleanSupplier mergeFluids;
+    private final Supplier<RecipeVariants.Mode> mode;
     private Stamp stamp;
     private List<Recipe> all;
     private final Map<Focus, List<Recipe>> focused = new LinkedHashMap<>(16, 0.75f, true) {
         @Override protected boolean removeEldestEntry(Map.Entry<Focus, List<Recipe>> entry) { return size() > 64; }
     };
 
-    public MachineRecipeLookup(RecipeMap map, BooleanSupplier mergeFluids) {
+    public MachineRecipeLookup(RecipeMap map, Supplier<RecipeVariants.Mode> mode) {
         this.map = map;
         this.variants = ((RecipeMapRevision) map).gtqualityneo$recipeVariants();
-        this.mergeFluids = mergeFluids;
+        this.mode = mode;
     }
 
     private Stamp current() {
         return new Stamp(map instanceof RecipeMapRevision revision ? revision.gtqualityneo$recipeRevision() : 0,
-            map.mRecipeList.size(), map.mRecipeMapHandlers.size(), mergeFluids.getAsBoolean());
+            map.mRecipeList.size(), map.mRecipeMapHandlers.size(), mode.get());
     }
 
     private void refresh() {
@@ -49,7 +49,8 @@ public final class MachineRecipeLookup {
     }
 
     private List<Recipe> pages(List<Recipe> recipes) {
-        return mergeFluids.getAsBoolean() ? variants.select(recipes) : List.copyOf(recipes);
+        var current = mode.get();
+        return current.any() ? variants.select(recipes, current) : List.copyOf(recipes);
     }
 
     public synchronized List<Recipe> find(ItemStack stack, boolean input) {
@@ -87,8 +88,8 @@ public final class MachineRecipeLookup {
                 if (map.getClass().getMethod("getNEIAllRecipes").getDeclaringClass() != RecipeMap.class) {
                     // Hammer/crucible maps append virtual recipes outside the registration API.
                     result = pages(map.getNEIAllRecipes());
-                } else if (mergeFluids.getAsBoolean()) {
-                    result = variants.pages();
+                } else if (mode.get().any()) {
+                    result = variants.pages(mode.get());
                 } else {
                     result = map.mRecipeList.stream().filter(recipe -> recipe.mEnabled && !recipe.mHidden).toList();
                 }
@@ -107,7 +108,7 @@ public final class MachineRecipeLookup {
     /** Preserve GT6's cheap startup emptiness check rather than generating every machine at JEI startup. */
     public List<Recipe> lazyAll() { return new DeferredRecipes(); }
 
-    private record Stamp(long revision, int recipes, int handlers, boolean merge) {}
+    private record Stamp(long revision, int recipes, int handlers, RecipeVariants.Mode mode) {}
     private record Focus(Item item, int count, DataComponentPatch components, boolean input) {}
 
     private final class DeferredRecipes extends AbstractList<Recipe> {
@@ -132,7 +133,7 @@ public final class MachineRecipeLookup {
                         started = true;
                         if (resolved == null && (source = GT6_JEI_StartMaps.firstReady(map)) != null) {
                             early = new RecipeVariants.Grouped(List.of(source));
-                            if (mergeFluids.getAsBoolean()) early.completeFrom(variants.pageFor(source));
+                            if (mode.get().any()) early.completeFrom(variants.pageFor(source, mode.get()));
                             action.accept(early);
                             return true;
                         }
@@ -140,7 +141,7 @@ public final class MachineRecipeLookup {
                     var recipes = resolve();
                     while (index < recipes.size()) {
                         var recipe = recipes.get(index++);
-                        if (early != null && (mergeFluids.getAsBoolean() ? variants.represents(recipe, source) : recipe == source)) {
+                        if (early != null && (mode.get().any() ? variants.represents(recipe, source, mode.get()) : recipe == source)) {
                             early.completeFrom(recipe);
                             continue;
                         }

@@ -49,7 +49,7 @@ class MachineRecipeLookupTest {
     @Test void equivalentFluidsShareACardWithoutChangingMachineRecipes(MinecraftServer server) {
         var water = recipe(new FluidStack(Fluids.WATER, 100));
         var lava = recipe(new FluidStack(Fluids.LAVA, 100));
-        var grouped = RecipeVariants.group(List.of(water, lava));
+        var grouped = RecipeVariants.group(List.of(water, lava), RecipeVariants.Mode.ALL);
         assertEquals(1, grouped.size());
         var page = grouped.getFirst();
         assertNotSame(water, page);
@@ -78,12 +78,12 @@ class MachineRecipeLookupTest {
                 case 8 -> other.mSpecialValue++;
                 case 9 -> ST.meta_(other.mInputs[0], 42);
             }
-            assertEquals(2, RecipeVariants.group(List.of(base, other)).size(), "difference " + difference);
+            assertEquals(2, RecipeVariants.group(List.of(base, other), RecipeVariants.Mode.ALL).size(), "difference " + difference);
         }
         var second = base.copy();
         base.mFluidInputs = new FluidStack[]{new FluidStack(Fluids.WATER, 100), new FluidStack(Fluids.LAVA, 100)};
         second.mFluidInputs = new FluidStack[]{new FluidStack(Fluids.LAVA, 100), new FluidStack(Fluids.WATER, 100)};
-        assertEquals(2, RecipeVariants.group(List.of(base, second)).size());
+        assertEquals(2, RecipeVariants.group(List.of(base, second), RecipeVariants.Mode.ALL).size());
     }
 
     @Test void catalystsRemainUnconsumedOnTheGroupedDisplayCopy() {
@@ -91,7 +91,7 @@ class MachineRecipeLookupTest {
         var lava = recipe(new FluidStack(Fluids.LAVA, 100));
         ST.size_(0, water.mInputs[0]);
         ST.size_(0, lava.mInputs[0]);
-        var page = RecipeVariants.group(List.of(water, lava)).getFirst();
+        var page = RecipeVariants.group(List.of(water, lava), RecipeVariants.Mode.ALL).getFirst();
         assertEquals(0, ST.size(page.mInputs[0]));
         assertEquals(0, ST.size(water.mInputs[0]));
         assertEquals(2, RecipeVariants.inputOptions(page, 0).size());
@@ -115,7 +115,7 @@ class MachineRecipeLookupTest {
                 @Override public boolean isDone() { return done; }
             });
         }
-        var lookup = new MachineRecipeLookup(map, () -> true);
+        var lookup = new MachineRecipeLookup(map, () -> RecipeVariants.Mode.ALL);
         assertTrue(lookup.lazyAll().stream().findFirst().isPresent());
         assertEquals(0, calls.get());
         assertEquals(9, lookup.lazyAll().stream().toList().size());
@@ -129,7 +129,7 @@ class MachineRecipeLookupTest {
         var map = map();
         map.add(recipe(new FluidStack(Fluids.WATER, 100)), false, false);
         map.add(recipe(new FluidStack(Fluids.LAVA, 100)), false, false);
-        var lookup = new MachineRecipeLookup(map, () -> true);
+        var lookup = new MachineRecipeLookup(map, () -> RecipeVariants.Mode.ALL);
         var streamed = lookup.lazyAll().stream().toList();
         assertEquals(1, streamed.size());
         assertEquals(2, RecipeVariants.inputOptions(streamed.getFirst(), 0).size());
@@ -143,9 +143,9 @@ class MachineRecipeLookupTest {
         map.add(lava, false, false);
         var registry = map.gtqualityneo$recipeVariants();
         assertEquals(1, registry.groupCount(), "Grouping takes place during registration");
-        var registeredPage = registry.pageFor(water);
-        assertSame(registeredPage, registry.pageFor(lava));
-        var lookup = new MachineRecipeLookup(map, () -> true);
+        var registeredPage = registry.pageFor(water, RecipeVariants.Mode.ALL);
+        assertSame(registeredPage, registry.pageFor(lava, RecipeVariants.Mode.ALL));
+        var lookup = new MachineRecipeLookup(map, () -> RecipeVariants.Mode.ALL);
         assertSame(registeredPage, lookup.all().getFirst());
         map.queryResults = List.of(water);
         assertSame(registeredPage, lookup.find(new ItemStack(Items.IRON_INGOT), true).getFirst());
@@ -164,7 +164,7 @@ class MachineRecipeLookupTest {
         };
         maps.add(map);
         map.add(recipe(new FluidStack(Fluids.WATER, 100)), false, false);
-        var lookup = new MachineRecipeLookup(map, () -> true);
+        var lookup = new MachineRecipeLookup(map, () -> RecipeVariants.Mode.ALL);
         assertEquals(2, lookup.all().size());
         assertTrue(lookup.all().contains(virtual));
         assertEquals(1, map.gtqualityneo$recipeVariants().groupCount());
@@ -176,7 +176,7 @@ class MachineRecipeLookupTest {
         map.add(recipe(new FluidStack(Fluids.WATER, 100)), false, false);
         map.add(recipe(new FluidStack(Fluids.LAVA, 100)), false, false);
         var merge = new AtomicBoolean(true);
-        var lookup = new MachineRecipeLookup(map, merge::get);
+        var lookup = new MachineRecipeLookup(map, () -> new RecipeVariants.Mode(merge.get(), merge.get()));
         var stack = new ItemStack(Items.IRON_INGOT);
         assertSame(lookup.find(stack, true), lookup.find(stack.copy(), true));
         assertEquals(1, map.queries);

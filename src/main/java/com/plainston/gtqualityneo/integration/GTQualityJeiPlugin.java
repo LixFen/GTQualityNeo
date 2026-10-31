@@ -2,6 +2,7 @@ package com.plainston.gtqualityneo.integration;
 
 import com.plainston.gtqualityneo.GTQualityNeo;
 import com.plainston.gtqualityneo.client.screen.CreativeTankScreen;
+import com.plainston.gtqualityneo.integration.jei.MergedCraftingRecipes;
 import gregapi.gui.ContainerCommon;
 import gregapi.gui.Slot_Base;
 import gregapi.jei.GT6_JEI_CraftingCategory;
@@ -28,7 +29,18 @@ import java.util.Optional;
 @JeiPlugin
 public final class GTQualityJeiPlugin implements IModPlugin {
     private mezz.jei.api.runtime.IJeiRuntime runtime;
-    @Override public void onRuntimeAvailable(mezz.jei.api.runtime.IJeiRuntime runtime) { this.runtime = runtime; }
+    /** Read once per JEI load, so the extension, the lookup and the hidden GT6 category always agree. */
+    private boolean mergeCrafting;
+    @Override public void onRuntimeAvailable(mezz.jei.api.runtime.IJeiRuntime runtime) {
+        this.runtime = runtime;
+        if (mergeCrafting) try { runtime.getRecipeManager().hideRecipeCategory(GT6_JEI_CraftingCategory.TYPE); }
+        catch (RuntimeException e) { com.mojang.logging.LogUtils.getLogger().warn("Could not hide GT6's separate crafting category", e); }
+    }
+    @Override public void registerVanillaCategoryExtensions(mezz.jei.api.registration.IVanillaCategoryExtensionRegistration registration) {
+        mergeCrafting = GTQualityNeo.JEI_MERGE_CRAFTING.get();
+        if (mergeCrafting) registration.getCraftingCategory().addExtension(MergedCraftingRecipes.View.class,
+            new MergedCraftingRecipes.Extension(registration.getJeiHelpers().getGuiHelper()));
+    }
     @Override public void onRuntimeUnavailable() {
         runtime = null;
         com.plainston.gtqualityneo.integration.jei.DynamicRecipeIngredients.invalidateResources();
@@ -44,6 +56,7 @@ public final class GTQualityJeiPlugin implements IModPlugin {
         if (GTQualityNeo.JEI_WORLDGEN.get()) registration.addSimpleRecipeManagerPlugin(
             com.plainston.gtqualityneo.integration.worldgen.WorldgenCategory.TYPE,
             new com.plainston.gtqualityneo.integration.worldgen.WorldgenLookup());
+        if (mergeCrafting) registration.addSimpleRecipeManagerPlugin(RecipeTypes.CRAFTING, new MergedCraftingRecipes.Lookup(() -> runtime));
     }
     @Override public Identifier getPluginUid() { return Identifier.fromNamespaceAndPath(GTQualityNeo.MOD_ID, "qol"); }
     @Override public void registerRecipeTransferHandlers(IRecipeTransferRegistration registration) {

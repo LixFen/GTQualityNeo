@@ -93,7 +93,7 @@ class MachineRecipeDisplayTest {
     @Test void equivalentFluidOptionsAreVisibleAndSearchable() {
         var water = MachineRecipeLookupTest.recipe(new FluidStack(Fluids.WATER, 100));
         var lava = MachineRecipeLookupTest.recipe(new FluidStack(Fluids.LAVA, 100));
-        var page = RecipeVariants.group(List.of(water, lava)).getFirst();
+        var page = RecipeVariants.group(List.of(water, lava), RecipeVariants.Mode.ALL).getFirst();
         var recorder = new Recorder();
         MachineRecipeDisplay.setRecipe(RM.Bath, recorder.builder(), page);
         assertEquals(2, recorder.slots.get("input/fluid/0").items.size());
@@ -101,6 +101,24 @@ class MachineRecipeDisplayTest {
         assertTrue(recorder.nativeFluids.stream().anyMatch(fluid -> fluid.getFluid() == Fluids.WATER));
         assertTrue(recorder.nativeFluids.stream().anyMatch(fluid -> fluid.getFluid() == Fluids.LAVA));
         assertTrue(recorder.nativeFluids.stream().allMatch(fluid -> fluid.getAmount() == 100));
+        assertTrue(recorder.links.isEmpty(), "A single varying slot needs no link");
+    }
+
+    @Test void materialAndFluidVariantsAreEachShownOnce() {
+        var water = new FluidStack(Fluids.WATER, 144);
+        var lava = new FluidStack(Fluids.LAVA, 144);
+        var members = List.of(OreDictVariantsTest.bath(gregapi.data.MT.Steel, gregapi.data.MT.FierySteel, water),
+            OreDictVariantsTest.bath(gregapi.data.MT.Steel, gregapi.data.MT.FierySteel, lava),
+            OreDictVariantsTest.bath(gregapi.data.MT.Knightmetal, gregapi.data.MT.FierySteel, water),
+            OreDictVariantsTest.bath(gregapi.data.MT.Knightmetal, gregapi.data.MT.FierySteel, lava));
+        var page = RecipeVariants.group(members, RecipeVariants.Mode.ALL).getFirst();
+        var recorder = new Recorder();
+        MachineRecipeDisplay.setRecipe(RM.Bath, recorder.builder(), page);
+        assertEquals(2, recorder.slots.get("input/item/0").items.size());
+        assertEquals(2, recorder.slots.get("input/fluid/0").items.size());
+        assertEquals(2, recorder.nativeFluids.size());
+        assertEquals(1, recorder.slots.get("output/item/0").items.size());
+        assertTrue(recorder.links.isEmpty(), "Slots of a complete product cycle independently");
     }
 
     @Test void textureCropsMatchTheOriginalMachineMenuCoordinates() {
@@ -152,6 +170,7 @@ class MachineRecipeDisplayTest {
     private static final class Recorder {
         final Map<String, CapturedSlot> slots = new HashMap<>();
         final List<FluidStack> nativeFluids = new ArrayList<>();
+        final List<List<?>> links = new ArrayList<>();
 
         IRecipeLayoutBuilder builder() {
             return (IRecipeLayoutBuilder) Proxy.newProxyInstance(getClass().getClassLoader(),
@@ -159,6 +178,7 @@ class MachineRecipeDisplayTest {
                     if (method.isDefault()) return InvocationHandler.invokeDefault(proxy, method, args);
                     if (method.getName().equals("addSlot")) return slot((RecipeIngredientRole) args[0], false);
                     if (method.getName().equals("addInvisibleIngredients")) return slot((RecipeIngredientRole) args[0], true);
+                    if (method.getName().equals("createFocusLink")) { links.add(List.copyOf((java.util.Collection<?>) args[0])); return null; }
                     throw new AssertionError(method.getName());
                 });
         }

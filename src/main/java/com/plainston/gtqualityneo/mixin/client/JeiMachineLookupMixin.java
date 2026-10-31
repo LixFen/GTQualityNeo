@@ -2,6 +2,7 @@ package com.plainston.gtqualityneo.mixin.client;
 
 import com.plainston.gtqualityneo.GTQualityNeo;
 import com.plainston.gtqualityneo.integration.jei.MachineRecipeLookup;
+import com.plainston.gtqualityneo.integration.jei.RecipeVariants;
 import gregapi.data.FL;
 import gregapi.recipes.Recipe;
 import gregapi.recipes.Recipe.RecipeMap;
@@ -26,7 +27,8 @@ public abstract class JeiMachineLookupMixin {
 
     @Unique private MachineRecipeLookup gtqualityneo$lookup() {
         if (gtqualityneo$lookup == null)
-            gtqualityneo$lookup = new MachineRecipeLookup(mMap, () -> GTQualityNeo.JEI_FLUID_VARIANTS.get());
+            gtqualityneo$lookup = new MachineRecipeLookup(mMap, () -> new RecipeVariants.Mode(
+                GTQualityNeo.JEI_FLUID_VARIANTS.get(), GTQualityNeo.JEI_OREDICT_VARIANTS.get()));
         return gtqualityneo$lookup;
     }
 

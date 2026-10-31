@@ -20,18 +20,18 @@ class RegisteredRecipeVariantsTest {
         var separate = recipe(200);
         registry.add(water);
         registry.add(separate);
-        var unchangedPage = registry.pageFor(separate);
+        var unchangedPage = registry.pageFor(separate, RecipeVariants.Mode.ALL);
         registry.add(lava);
         registry.add(lava);
         assertEquals(2, registry.groupCount());
-        assertEquals(2, registry.pages().size());
-        assertEquals(2, RecipeVariants.inputOptions(registry.pageFor(water), 0).size());
-        assertSame(unchangedPage, registry.pageFor(separate));
+        assertEquals(2, registry.pages(RecipeVariants.Mode.ALL).size());
+        assertEquals(2, RecipeVariants.inputOptions(registry.pageFor(water, RecipeVariants.Mode.ALL), 0).size());
+        assertSame(unchangedPage, registry.pageFor(separate, RecipeVariants.Mode.ALL));
         registry.remove(water);
-        assertSame(lava, registry.pageFor(lava));
+        assertSame(lava, registry.pageFor(lava, RecipeVariants.Mode.ALL));
         registry.remove(lava);
-        assertEquals(List.of(separate), registry.pages());
-        assertSame(unchangedPage, registry.pageFor(separate));
+        assertEquals(List.of(separate), registry.pages(RecipeVariants.Mode.ALL));
+        assertSame(unchangedPage, registry.pageFor(separate, RecipeVariants.Mode.ALL));
     }
 
     @Test void removalUsesOriginalKeyAndRebuildReclassifiesEditedRecipes() {
@@ -43,7 +43,7 @@ class RegisteredRecipeVariantsTest {
         water.mDuration++;
         registry.remove(water);
         assertEquals(1, registry.groupCount());
-        assertSame(lava, registry.pages().getFirst());
+        assertSame(lava, registry.pages(RecipeVariants.Mode.ALL).getFirst());
         registry.rebuild(List.of(water, lava));
         assertEquals(2, registry.groupCount());
         water.mDuration = lava.mDuration;
@@ -62,9 +62,9 @@ class RegisteredRecipeVariantsTest {
         assertEquals(0, registry.groupCount());
         var virtual = new Recipe(false, false, new ItemStack[]{new ItemStack(Items.DIAMOND)},
             null, null, null, null, null, 20, 4, 0);
-        assertEquals(List.of(virtual), registry.select(List.of(virtual)));
+        assertEquals(List.of(virtual), registry.select(List.of(virtual), RecipeVariants.Mode.ALL));
         assertEquals(0, registry.groupCount());
-        assertTrue(registry.pages().isEmpty());
+        assertTrue(registry.pages(RecipeVariants.Mode.ALL).isEmpty());
     }
 
     private static Recipe recipe(int amount) {

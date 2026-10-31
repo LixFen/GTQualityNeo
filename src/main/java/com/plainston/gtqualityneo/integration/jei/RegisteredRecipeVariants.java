@@ -14,6 +14,7 @@ public final class RegisteredRecipeVariants {
     private final Map<Object, Group> groups = new LinkedHashMap<>();
     private final Map<Recipe, Group> membership = new IdentityHashMap<>();
     private List<Recipe> pages;
+    private RecipeVariants.Mode pagesMode;
 
     public synchronized void add(Recipe recipe) {
         if (!recipe.mEnabled || recipe.mHidden || membership.containsKey(recipe)) return;
@@ -21,7 +22,7 @@ public final class RegisteredRecipeVariants {
         Object key = signature == null ? recipe : signature;
         var group = groups.computeIfAbsent(key, Group::new);
         group.members.add(recipe);
-        group.page = null;
+        group.invalidate();
         membership.put(recipe, group);
         pages = null;
     }
@@ -31,7 +32,7 @@ public final class RegisteredRecipeVariants {
         var group = membership.remove(recipe);
         if (group == null) return;
         group.members.remove(recipe);
-        group.page = null;
+        group.invalidate();
         if (group.members.isEmpty()) groups.remove(group.key);
         pages = null;
     }
@@ -45,45 +46,69 @@ public final class RegisteredRecipeVariants {
 
     public synchronized int groupCount() { return groups.size(); }
 
-    /** Materializing a display copy does not reclassify or hash any recipe. Unchanged groups reuse their copy. */
-    public synchronized List<Recipe> pages() {
-        if (pages == null) pages = groups.values().stream().map(Group::page).toList();
+    /** Materializing a display copy does not reclassify or hash any recipe. Unchanged groups reuse their copies. */
+    public synchronized List<Recipe> pages(RecipeVariants.Mode mode) {
+        if (pages == null || !mode.equals(pagesMode)) {
+            pages = groups.values().stream().flatMap(group -> group.pages(mode).stream()).toList();
+            pagesMode = mode;
+        }
         return pages;
     }
 
-    public synchronized Recipe pageFor(Recipe source) {
+    public synchronized Recipe pageFor(Recipe source, RecipeVariants.Mode mode) {
         var group = membership.get(source);
-        return group == null ? source : group.page();
+        return group == null ? source : group.pageFor(source, mode);
     }
 
-    public synchronized boolean represents(Recipe page, Recipe source) {
-        return page == pageFor(source);
+    public synchronized boolean represents(Recipe page, Recipe source, RecipeVariants.Mode mode) {
+        return page == pageFor(source, mode);
     }
 
-    public synchronized List<Recipe> select(List<Recipe> sources) {
+    public synchronized List<Recipe> select(List<Recipe> sources, RecipeVariants.Mode mode) {
         var result = new LinkedHashSet<Recipe>();
         var transientRecipes = new ArrayList<Recipe>();
         for (var recipe : sources) {
             var group = membership.get(recipe);
             if (group == null) transientRecipes.add(recipe);
-            else result.add(group.page());
+            else result.add(group.pageFor(recipe, mode));
         }
         // Some RecipeMap subclasses return virtual recipes that never pass through GT6's add API.
-        if (!transientRecipes.isEmpty()) result.addAll(RecipeVariants.group(transientRecipes));
+        if (!transientRecipes.isEmpty()) result.addAll(RecipeVariants.group(transientRecipes, mode));
         return List.copyOf(result);
     }
 
     private static final class Group {
         private final Object key;
         private final LinkedHashSet<Recipe> members = new LinkedHashSet<>();
-        private Recipe page;
+        private RecipeVariants.Mode mode;
+        private List<Recipe> pages;
+        private Map<Recipe, Recipe> pageOf;
 
         private Group(Object key) { this.key = key; }
 
-        private Recipe page() {
-            if (page == null) page = members.size() == 1 ? members.getFirst()
-                : new RecipeVariants.Grouped(List.copyOf(members));
-            return page;
+        private void invalidate() { pages = null; pageOf = null; mode = null; }
+
+        /** The mode decides which members share a card; the split is cached until the group or the mode changes. */
+        private void split(RecipeVariants.Mode current) {
+            if (pages != null && current.equals(mode)) return;
+            var buckets = new LinkedHashMap<Object, List<Recipe>>();
+            boolean grouped = !(key instanceof Recipe);
+            for (var recipe : members) {
+                Object part = grouped ? RecipeVariants.partition(recipe, current) : null;
+                buckets.computeIfAbsent(part == null ? recipe : part, unused -> new ArrayList<>()).add(recipe);
+            }
+            pageOf = new IdentityHashMap<>();
+            var result = new ArrayList<Recipe>();
+            for (var bucket : buckets.values()) for (var page : RecipeVariants.pages(bucket)) {
+                result.add(page);
+                if (page instanceof RecipeVariants.Grouped card) for (var recipe : card.members()) pageOf.put(recipe, page);
+                else pageOf.put(page, page);
+            }
+            pages = List.copyOf(result);
+            mode = current;
         }
+
+        private List<Recipe> pages(RecipeVariants.Mode current) { split(current); return pages; }
+        private Recipe pageFor(Recipe source, RecipeVariants.Mode current) { split(current); return pageOf.get(source); }
     }
 }
