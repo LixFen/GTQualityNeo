@@ -38,6 +38,7 @@ public final class CreativeTankScreen extends AbstractContainerScreen<CreativeTa
     private final Button automatic = new Button();
     private final Label fluidName = new Label();
     private final FluidStackTexture fluidTexture = new FluidStackTexture(FluidStack.EMPTY);
+    private com.plainston.gtqualityneo.fluid.CreativeTank.Settings displayedSettings;
 
     public CreativeTankScreen(CreativeTankMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title, 176, 184);
@@ -150,7 +151,12 @@ public final class CreativeTankScreen extends AbstractContainerScreen<CreativeTa
     }
 
     private void updateSettings() {
-        if (!rate.isFocused()) rate.setText(Integer.toString(menu.settings.rate()));
+        if (!rate.isFocused()) {
+            String value = Integer.toString(menu.settings.rate());
+            if (!value.equals(rate.getRawText())) rate.setText(value);
+        }
+        if (displayedSettings == menu.settings) return;
+        displayedSettings = menu.settings;
         automatic.setText(Component.translatable("gtqualityneo.creative_tank.automatic_state",
             text(menu.settings.automatic() ? "on" : "off")));
         var fluid = menu.settings.fluid();

@@ -66,7 +66,6 @@ public final class CreativeTank extends BlockEntity {
     }
 
     private Settings settings = Settings.DEFAULT;
-    private long outputTick = Long.MIN_VALUE;
     private int emitted;
     private final SnapshotJournal<Integer> budget = new SnapshotJournal<>() {
         @Override protected Integer createSnapshot() { return emitted; }
@@ -109,7 +108,6 @@ public final class CreativeTank extends BlockEntity {
 
     private int available() {
         if (level == null || level.isClientSide()) return 0;
-        if (outputTick != level.getGameTime()) { outputTick = level.getGameTime(); emitted = 0; }
         return Math.max(0, settings.rate() - emitted);
     }
 
@@ -131,6 +129,7 @@ public final class CreativeTank extends BlockEntity {
     };
 
     public static void tick(net.minecraft.world.level.Level level, BlockPos pos, BlockState state, CreativeTank tank) {
+        tank.emitted = 0;
         if (!GTQualityNeo.CREATIVE_TANK.get() || level.isClientSide() || !tank.settings.automatic() || tank.settings.fluid().isEmpty()) return;
         FluidResource resource = tank.handler.getResource(0);
         for (Direction side : Direction.values()) {
