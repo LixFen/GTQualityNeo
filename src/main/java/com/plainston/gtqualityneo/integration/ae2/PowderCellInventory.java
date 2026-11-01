@@ -1,10 +1,12 @@
 package com.plainston.gtqualityneo.integration.ae2;
 
 import appeng.api.config.Actionable;
+import appeng.api.ids.AEComponents;
 import appeng.api.networking.security.IActionSource;
 import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKey;
 import appeng.api.stacks.KeyCounter;
+import appeng.api.stacks.GenericStack;
 import appeng.api.storage.cells.CellState;
 import appeng.api.storage.cells.ISaveProvider;
 import appeng.api.storage.cells.StorageCell;
@@ -21,12 +23,18 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public final class PowderCellInventory implements StorageCell {
     static final String CONTENTS = "gtqualityneo.powders";
     final PowderAmounts amounts = new PowderAmounts();
     private final ItemStack cell;
     private final ISaveProvider host;
+    private boolean dirty;
+    private List<GenericStack> configured;
+    private final Map<String, ItemStack> marked = new HashMap<>();
     PowderCellInventory(ItemStack cell, ISaveProvider host) {
         this.cell = cell;
         this.host = host;
@@ -44,14 +52,18 @@ public final class PowderCellInventory implements StorageCell {
         return data;
     }
     private ItemStack marked(String material) {
-        var config = ((PowderCell) cell.getItem()).getConfigInventory(cell);
-        for (int slot = 0; slot < config.size(); slot++) {
-            if (!(config.getKey(slot) instanceof AEItemKey key)) continue;
-            var stack = key.toStack();
-            var data = powder(stack);
-            if (data != null && data.mMaterial.mMaterial.mNameInternal.equals(material)) return stack;
+        List<GenericStack> config = cell.getOrDefault(AEComponents.STORAGE_CELL_CONFIG_INV, List.of());
+        if (configured != config) {
+            configured = config;
+            marked.clear();
+            for (var entry : config) {
+                if (entry == null || !(entry.what() instanceof AEItemKey key)) continue;
+                var stack = key.toStack();
+                var data = powder(stack);
+                if (data != null) marked.putIfAbsent(data.mMaterial.mMaterial.mNameInternal, stack);
+            }
         }
-        return ItemStack.EMPTY;
+        return marked.getOrDefault(material, ItemStack.EMPTY);
     }
     ItemStack output(String material) {
         var marked = marked(material);
@@ -66,7 +78,7 @@ public final class PowderCellInventory implements StorageCell {
         String material = data.mMaterial.mMaterial.mNameInternal;
         if (((PowderCell) cell.getItem()).getUpgrades(cell).isInstalled(AEItems.INVERTER_CARD) && marked(material).isEmpty()) return 0;
         long moved = amounts.insert(material, data.mPrefix.mAmount, count, mode.isSimulate());
-        if (moved > 0 && !mode.isSimulate()) persist();
+        if (moved > 0 && !mode.isSimulate()) saveChanges();
         return moved;
     }
     @Override public long extract(AEKey what, long count, Actionable mode, IActionSource source) {
@@ -76,7 +88,7 @@ public final class PowderCellInventory implements StorageCell {
         String material = data.mMaterial.mMaterial.mNameInternal;
         if (!key.matches(output(material))) return 0;
         long moved = amounts.extract(material, data.mPrefix.mAmount, count, mode.isSimulate());
-        if (moved > 0 && !mode.isSimulate()) persist();
+        if (moved > 0 && !mode.isSimulate()) saveChanges();
         return moved;
     }
     @Override public void getAvailableStacks(KeyCounter out) {
@@ -99,8 +111,14 @@ public final class PowderCellInventory implements StorageCell {
     @Override public double getIdleDrain() { return 2; }
     @Override public boolean canFitInsideCell() { return amounts.materials.isEmpty(); }
     @Override public Component getDescription() { return cell.getHoverName(); }
-    @Override public void persist() {
-        CustomData.update(DataComponents.CUSTOM_DATA, cell, tag -> tag.put(CONTENTS, amounts.write()));
+    private void saveChanges() {
+        dirty = true;
         if (host != null) host.saveChanges();
+        else persist();
+    }
+    @Override public void persist() {
+        if (!dirty) return;
+        CustomData.update(DataComponents.CUSTOM_DATA, cell, tag -> tag.put(CONTENTS, amounts.write()));
+        dirty = false;
     }
 }
