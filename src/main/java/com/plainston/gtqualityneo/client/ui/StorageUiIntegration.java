@@ -7,7 +7,7 @@ import gregapi.gui.ContainerCommonBasicMachine;
 import net.neoforged.neoforge.client.event.ScreenEvent;
 import net.neoforged.neoforge.common.NeoForge;
 
-/** Loaded only on the client when LDLib2 is installed. Keeps GT6's original menu and slot identities. */
+/** Client UI integration that keeps GT6's original menu and slot identities. */
 public final class StorageUiIntegration {
     private StorageUiIntegration() {}
 

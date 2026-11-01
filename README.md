@@ -23,21 +23,23 @@
 
 ## LDLib2 界面（试验）
 
-客户端安装 LDLib2 `26.1.2.43` 以及以后版本后，GT6 大部分GUI将变为Modern Modular UI，（推荐安装）
+客户端必须安装 LDLib2 `26.1.2.43` 或更高，GT6 大部分 GUI 将使用 Modern Modular UI。
 
 ## JEI 兼容
 
 - 按类型合并了大量配方
 - 优化了配方查询速率
 
+
 ## QoL 功能
 
+- 添加了资源扫描仪
 - 手持凿子潜行右键模具选择形状
 - 手持选择器电路 Shift + 右键空气选号
 - 采矿电钻范围采掘
 - 允许流体管道单向传递
 - 机器 GUI 的流体槽支持 GUI 内交互
-- 创造流体储罐
+- 创造流体储罐（LDLib2 原版风格界面）
 - 按配置允许遮挡机器面交互
 - 树脂袋允许自动化
 - GT6 全套耐热服火焰伤害免疫
@@ -51,6 +53,8 @@
 - 物品及流体过滤器支持从 JEI 拖入幻影条件
 - JEI 多方块结构预览
 - JEI 的 GT6 资源生成查询
+
+与独立模组 GT6 Scanner Modern（`gt6scan`）不兼容，使用前需在客户端和服务端移除原模组。旧版四级扫描仪会在读取存档时自动转换为 GTQualityNeo 对应版本，保留 EU 电量、自定义名称和其他组件，保存后使用新的物品 ID。
 
 
 | 配置 | 文件类型 | 默认值 |
@@ -116,4 +120,5 @@
 ## 来源
 
 - [GTQuality](https://github.com/LixFen/GTQuality) 的现有业务逻辑
+- `D:\CodeReference\gt6scan-modern` 的扫描仪实现与资源，MIT 许可证见 `GT6SCAN_LICENSE.txt`
 - NeoForge MDK

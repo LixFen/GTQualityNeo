@@ -1,12 +1,25 @@
 package com.plainston.gtqualityneo.client.screen;
 
+import com.lowdragmc.lowdraglib2.gui.holder.IModularUIHolderMenu;
+import com.lowdragmc.lowdraglib2.gui.texture.FluidStackTexture;
+import com.lowdragmc.lowdraglib2.gui.texture.SpriteTexture;
+import com.lowdragmc.lowdraglib2.gui.ui.ModularUI;
+import com.lowdragmc.lowdraglib2.gui.ui.ModularUIClientAccess;
+import com.lowdragmc.lowdraglib2.gui.ui.UI;
+import com.lowdragmc.lowdraglib2.gui.ui.UIElement;
+import com.lowdragmc.lowdraglib2.gui.ui.elements.Button;
+import com.lowdragmc.lowdraglib2.gui.ui.elements.ItemSlot;
+import com.lowdragmc.lowdraglib2.gui.ui.elements.Label;
+import com.lowdragmc.lowdraglib2.gui.ui.elements.TextField;
+import com.lowdragmc.lowdraglib2.gui.ui.style.StylesheetManager;
+import com.lowdragmc.lowdraglib2.gui.ui.styletemplate.MCSprites;
 import com.plainston.gtqualityneo.fluid.CreativeTankMenu;
 import com.plainston.gtqualityneo.qol.QolNetwork;
+import dev.vfyjxf.taffy.style.TaffyPosition;
 import gregapi.data.FL;
 import gregapi.util.ST;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.input.KeyEvent;
@@ -18,27 +31,65 @@ import net.neoforged.neoforge.transfer.fluid.FluidUtil;
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 
 public final class CreativeTankScreen extends AbstractContainerScreen<CreativeTankMenu> {
-    private EditBox rate;
-    private Button automatic;
+    private static final SpriteTexture SLOT = SpriteTexture.of("minecraft:textures/gui/container/generic_54.png")
+        .setSprite(7, 17, 18, 18).setBorder(1);
+    private final ModularUI ui;
+    private final TextField rate = new TextField();
+    private final Button automatic = new Button();
+    private final Label fluidName = new Label();
+    private final FluidStackTexture fluidTexture = new FluidStackTexture(FluidStack.EMPTY);
+
     public CreativeTankScreen(CreativeTankMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title, 176, 184);
-        inventoryLabelY = 91;
+        var root = new UIElement().layout(l -> l.width(imageWidth).height(imageHeight))
+            .style(s -> s.background(MCSprites.RECT));
+        root.addChild(label(title, 8, 6));
+        root.addChild(label(inventory.getDisplayName(), 8, 91));
+
+        var fluidSlot = new UIElement().layout(l -> l.positionType(TaffyPosition.ABSOLUTE)
+            .left(7).top(19).width(18).height(18)).style(s -> s.background(SLOT).tooltips(text("fluid_tip")));
+        fluidSlot.addChild(new UIElement().layout(l -> l.positionType(TaffyPosition.ABSOLUTE)
+            .left(1).top(1).width(16).height(16)).style(s -> s.background(fluidTexture)));
+        root.addChild(fluidSlot);
+        fluidName.textStyle(s -> s.textColor(0xff404040).textShadow(false));
+        root.addChild(fluidName.layout(l -> l.positionType(TaffyPosition.ABSOLUTE)
+            .left(29).top(25).width(112).height(9)));
+
+        root.addChild(automatic.setOnClick(event -> send(2, 0, FluidStack.EMPTY))
+            .layout(l -> l.positionType(TaffyPosition.ABSOLUTE).left(8).top(42).width(160).height(20)));
+        rate.setTextRegexValidator("[0-9]{0,10}").setCharValidator(character -> character >= '0' && character <= '9');
+        rate.style(s -> s.tooltips(text("rate")));
+        root.addChild(rate.layout(l -> l.positionType(TaffyPosition.ABSOLUTE)
+            .left(8).top(67).width(88).height(16)));
+        root.addChild(new Button().setText(text("apply")).setOnClick(event -> applyRate())
+            .layout(l -> l.positionType(TaffyPosition.ABSOLUTE).left(102).top(65).width(66).height(20)));
+        root.addChild(new Button().setText(Component.literal("X")).setOnClick(event -> send(3, 0, FluidStack.EMPTY))
+            .layout(l -> l.positionType(TaffyPosition.ABSOLUTE).left(147).top(18).width(21).height(20)));
+
+        var holder = (IModularUIHolderMenu) (Object) menu;
+        for (var slot : menu.slots) {
+            var element = new ItemSlot().bind(slot).slotStyle(s -> s.isPlayerSlot(true));
+            element.layout(l -> l.positionType(TaffyPosition.ABSOLUTE).left(slot.x - 1).top(slot.y - 1)
+                .width(18).height(18).paddingAll(1));
+            element.style(s -> s.background(SLOT));
+            holder.ldlib2$addSlot(element);
+            root.addChild(element);
+        }
+        ui = ModularUI.of(UI.of(root, StylesheetManager.MC), inventory.player);
+        holder.setModularUI(ui);
+        updateSettings();
     }
+
     private static Component text(String key) { return Component.translatable("gtqualityneo.creative_tank." + key); }
+
+    private static UIElement label(Component text, int x, int y) {
+        return new Label().setText(text).textStyle(s -> s.textColor(0xff404040).textShadow(false))
+            .layout(l -> l.positionType(TaffyPosition.ABSOLUTE).left(x).top(y));
+    }
+
     @Override protected void init() {
         super.init();
-        rate = addRenderableWidget(new EditBox(font, leftPos + 8, topPos + 67, 88, 16, text("rate")));
-        rate.setMaxLength(10);
-        rate.setFilter(value -> value.matches("[0-9]*"));
-        rate.setValue(Integer.toString(menu.settings.rate()));
-        automatic = addRenderableWidget(Button.builder(text("automatic"), button -> send(2, 0, FluidStack.EMPTY))
-            .bounds(leftPos + 8, topPos + 42, 160, 20).build());
-        addRenderableWidget(Button.builder(text("apply"), button -> {
-            try { send(1, Integer.parseInt(rate.getValue()), FluidStack.EMPTY); rate.setFocused(false); }
-            catch (NumberFormatException ignored) { rate.setValue(Integer.toString(menu.settings.rate())); }
-        }).bounds(leftPos + 102, topPos + 65, 66, 20).build());
-        addRenderableWidget(Button.builder(Component.literal("X"), button -> send(3, 0, FluidStack.EMPTY))
-            .bounds(leftPos + 147, topPos + 18, 21, 20).build());
+        setFocused(ModularUIClientAccess.getWidget(ui));
     }
     public boolean overFluid(double x, double y) {
         return x >= leftPos + 7 && x < leftPos + 25 && y >= topPos + 19 && y < topPos + 37;
@@ -63,13 +114,26 @@ public final class CreativeTankScreen extends AbstractContainerScreen<CreativeTa
     private void send(int action, int value, FluidStack fluid) {
         ClientPacketDistributor.sendToServer(new QolNetwork.ConfigureTank(menu.containerId, action, value, fluid));
     }
+
+    private void applyRate() {
+        if (rate.isError()) {
+            rate.setText(Integer.toString(menu.settings.rate()));
+            return;
+        }
+        try {
+            send(1, Integer.parseInt(rate.getRawText()), FluidStack.EMPTY);
+            rate.blur();
+        } catch (NumberFormatException ignored) {
+            rate.setText(Integer.toString(menu.settings.rate()));
+        }
+    }
+
     @Override public boolean keyPressed(KeyEvent event) {
         if (rate.isFocused() && (event.key() == 257 || event.key() == 335)) {
-            try { send(1, Integer.parseInt(rate.getValue()), FluidStack.EMPTY); rate.setFocused(false); }
-            catch (NumberFormatException ignored) { rate.setValue(Integer.toString(menu.settings.rate())); }
+            applyRate();
             return true;
         }
-        if (rate.isFocused() && event.isEscape()) { rate.setFocused(false); return true; }
+        if (rate.isFocused() && event.isEscape()) { rate.blur(); return true; }
         return super.keyPressed(event);
     }
     @Override public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
@@ -82,31 +146,19 @@ public final class CreativeTankScreen extends AbstractContainerScreen<CreativeTa
     }
     @Override public void containerTick() {
         super.containerTick();
-        if (!rate.isFocused()) rate.setValue(Integer.toString(menu.settings.rate()));
-        automatic.setMessage(Component.translatable("gtqualityneo.creative_tank.automatic_state",
+        updateSettings();
+    }
+
+    private void updateSettings() {
+        if (!rate.isFocused()) rate.setText(Integer.toString(menu.settings.rate()));
+        automatic.setText(Component.translatable("gtqualityneo.creative_tank.automatic_state",
             text(menu.settings.automatic() ? "on" : "off")));
-    }
-    @Override public void extractContents(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
-        graphics.fill(leftPos, topPos, leftPos + imageWidth, topPos + imageHeight, 0xffc6c6c6);
-        graphics.fill(leftPos + 7, topPos + 19, leftPos + 25, topPos + 37, 0xff555555);
-        for (var slot : menu.slots) {
-            int x = leftPos + slot.x, y = topPos + slot.y;
-            graphics.fill(x - 1, y - 1, x + 17, y + 17, 0xff555555);
-            graphics.fill(x, y, x + 16, y + 16, 0xff8b8b8b);
-        }
         var fluid = menu.settings.fluid();
-        if (!fluid.isEmpty()) graphics.item(ST.nn(FL.display(fluid, false, false)), leftPos + 8, topPos + 20);
-        super.extractContents(graphics, mouseX, mouseY, partialTick);
+        fluidTexture.setFluids(fluid);
+        Component name = fluid.isEmpty() ? text("empty") : fluid.getFluidType().getDescription(fluid);
+        fluidName.setText(Component.literal(Minecraft.getInstance().font.plainSubstrByWidth(name.getString(), 112)));
+        fluidName.style(s -> s.tooltips(name));
     }
-    @Override protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-        super.extractLabels(graphics, mouseX, mouseY);
-        var fluid = menu.settings.fluid();
-        String name = fluid.isEmpty() ? text("empty").getString() : fluid.getFluidType().getDescription(fluid).getString();
-        graphics.text(font, font.plainSubstrByWidth(name, 112), 29, 25, 0xff404040, false);
-    }
-    @Override public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
-        super.extractRenderState(graphics, mouseX, mouseY, partialTick);
-        if (overFluid(mouseX, mouseY)) graphics.setComponentTooltipForNextFrame(font,
-            java.util.List.of(text("fluid_tip")), mouseX, mouseY);
-    }
+
+    @Override protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {}
 }

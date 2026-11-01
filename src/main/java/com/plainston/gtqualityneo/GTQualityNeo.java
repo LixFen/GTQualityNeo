@@ -74,6 +74,7 @@ public final class GTQualityNeo {
         bus.addListener(com.plainston.gtqualityneo.qol.UniversalHazmat::components);
         bus.addListener(com.plainston.gtqualityneo.qol.ObstructionConfig::configChanged);
         CreativeTank.register(bus);
+        com.plainston.gtqualityneo.scanner.ScannerIntegration.register(bus, container);
         if (net.neoforged.fml.ModList.get().isLoaded("ae2"))
             com.plainston.gtqualityneo.integration.ae2.AE2Integration.register(bus);
         NeoForge.EVENT_BUS.addListener(QolEvents::damage);

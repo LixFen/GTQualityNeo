@@ -24,6 +24,7 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.ModContainer;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.client.event.ScreenEvent;
 import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
@@ -33,11 +34,11 @@ import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 public final class QolClient {
     private static Object consumedFluidScreen;
 
-    public QolClient(IEventBus bus) {
+    public QolClient(IEventBus bus, ModContainer container) {
+        com.plainston.gtqualityneo.scanner.client.ScannerClient.register(bus, container);
         NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.client.event.ClientResourceLoadFinishedEvent event) ->
             com.plainston.gtqualityneo.integration.jei.DynamicRecipeIngredients.invalidateResources());
-        if (net.neoforged.fml.ModList.get().isLoaded("ldlib2"))
-            StorageUiIntegration.register();
+        StorageUiIntegration.register();
         bus.addListener((net.neoforged.neoforge.client.event.RegisterPictureInPictureRenderersEvent event) ->
             event.register(com.plainston.gtqualityneo.integration.multiblock.StructureRenderState.class,
                 com.plainston.gtqualityneo.integration.multiblock.StructureRenderer::new));

@@ -124,9 +124,8 @@ configurations {
 }
 
 dependencies {
-    compileOnly('com.lowdragmc.ldlib2:ldlib2-neoforge-26.1:26.1.2.43') { transitive = false }
+    implementation('com.lowdragmc.ldlib2:ldlib2-neoforge-26.1:26.1.2.43') { transitive = false }
     compileOnly 'dev.vfyjxf:taffy:1.1.5'
-    localRuntime('com.lowdragmc.ldlib2:ldlib2-neoforge-26.1:26.1.2.43') { transitive = false }
     testImplementation platform('org.junit:junit-bom:5.11.4')
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
@@ -227,6 +226,7 @@ tasks.named('test').configure {
 tasks.named('jar').configure {
     from('LICENSE')
     from('TEMPLATE_LICENSE.txt')
+    from('GT6SCAN_LICENSE.txt')
 }
 
 // IDEA no longer automatically downloads sources/javadoc jars for dependencies, so we need to explicitly enable the behavior.

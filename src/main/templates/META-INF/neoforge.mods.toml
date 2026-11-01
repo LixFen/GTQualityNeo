@@ -126,7 +126,15 @@ side="BOTH"
 
 [[dependencies.${mod_id}]]
 modId="ldlib2"
-type="optional"
+type="required"
 versionRange="[26.1.2.43,26.2)"
 ordering="AFTER"
 side="CLIENT"
+
+[[dependencies.${mod_id}]]
+modId="gt6scan"
+type="incompatible"
+reason="GTQualityNeo includes GT6 Scanner Modern. Remove gt6scan; existing scanners are automatically migrated to GTQualityNeo."
+versionRange=""
+ordering="NONE"
+side="BOTH"

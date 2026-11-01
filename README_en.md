@@ -1,6 +1,6 @@
 # GTQualityNeo
 
-GTQualityNeo is a quality-of-life add-on for the NeoForge port of GregTech 6. It adds gameplay and interface improvements and optional integrations with Jade, JEI, Applied Energistics 2 (AE2), FTB Quests, and LDLib2.
+GTQualityNeo is a quality-of-life add-on for the NeoForge port of GregTech 6. It adds gameplay and interface improvements, uses LDLib2 for client GUIs, and provides optional integrations with Jade, JEI, Applied Energistics 2 (AE2), and FTB Quests.
 
 > **Development status:** GregTech 6 for NeoForge is under active development. This project is intended for reference and personal use; compatibility can change as the port evolves.
 
@@ -21,18 +21,25 @@ With JEI installed, the mod merges selected recipe displays, improves machine re
 - Select mold shapes with a chisel and select circuit values with a selector circuit.
 - Use configurable range modes with mining drills.
 - Configure one-way fluid pipe connections and interact with fluid containers in machine GUIs.
-- Add a creative fluid tank and enable interaction with machine faces that are obstructed.
+- Add a creative fluid tank with a vanilla-style LDLib2 interface and enable interaction with machine faces that are obstructed.
 - Allow hopper extraction from resin bags; provide fire immunity with a complete GT6 heat-hazmat suit and improve protection from a complete universal hazmat suit.
 - Switch mass-storage items between material forms with a chisel.
 - Adjust scaffold climbing speed and scaffold collision, and update hopper selection and collision shapes.
 - Allow closed, dry trapdoors to provide air to combustion boxes.
 - Display GT6 tool durability and energy bars.
 
+### LDLib2 interface (experimental)
+
+The client requires LDLib2 `26.1.2.43` or a later `26.1.x` version and uses Modern Modular UI for most GT6 GUIs.
+
 ### Optional mod integrations
 
 - **AE2:** adds a ME powder consolidation storage cell for mass-storage forms; the cell supports advanced settings in the cell workbench.
 - **FTB Quests:** for GT6W items in the default `match_components=none` mode, task matching uses item plus subtype and ignores other component differences. Explicit `fuzzy` and `strict` modes retain FTB Quests' normal matching behavior. Non-GT6W items and filter tasks keep their normal behavior.
-- **LDLib2:** on the client, LDLib2 `26.1.2.43` or later enables the experimental Modern Modular UI for most GT6 GUIs.(Suggested)
+
+### Resource scanners
+
+Includes the GT6 Scanner Modern functionality: MV/HV/EV/IV scanners with GT6 EU charging and tiered crafting recipes, available in the Tools and GTQualityNeo creative tabs.
 
 ## Configuration
 
@@ -48,7 +55,7 @@ The default scaffold climb speeds are `0.14` up and `0.15` down. The Jade regist
 
 ## Requirements and compatibility
 
-The project targets Minecraft `26.1.2`, NeoForge `26.1.2.109`, and GregTech 6 NeoForge `6.0.0-alpha.17`. GregTech 6 and NeoForge are required. Jade, JEI, AE2, FTB Quests, and LDLib2 are optional integrations. The project metadata declares the minimum integration versions; see `src/main/templates/META-INF/neoforge.mods.toml` for version ranges.
+The project targets Minecraft `26.1.2`, NeoForge `26.1.2.109`, and GregTech 6 NeoForge `6.0.0-alpha.17`. GregTech 6 and NeoForge are required, and LDLib2 is required on the client. Jade, JEI, AE2, and FTB Quests are optional integrations. The project metadata declares the minimum integration versions; see `src/main/templates/META-INF/neoforge.mods.toml` for version ranges.
 
 ## Build from source
 
