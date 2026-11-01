@@ -18,7 +18,6 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.material.Fluid;
-import net.neoforged.neoforge.fluids.FluidStack;
 
 import gregapi.code.ItemStackContainer;
 import gregapi.data.ANY;
@@ -447,6 +446,27 @@ public final class WorldgenCatalog {
         }
     }
 
+    /** Resolve a focus once, including container capabilities only if a fluid page needs them. */
+    static final class Query {
+        final ItemStack stack;
+        final OreDictItemData data;
+        private boolean resolvedFluid;
+        private Fluid fluid;
+        Query(ItemStack stack) { this.stack = stack; data = OreDictManager.INSTANCE.getItemData(stack, true); }
+        Fluid fluid() {
+            if (!resolvedFluid) {
+                resolvedFluid = true;
+                if (gregapi.data.IL.Display_Fluid.equal(stack, true, true)) fluid = FL.fluid(ST.meta_(stack));
+                else {
+                    var contained = net.neoforged.neoforge.transfer.fluid.FluidUtil.getFirstStackContained(stack.copy());
+                    if (contained == null || contained.isEmpty()) contained = FL.getFluid(stack, true);
+                    fluid = contained == null ? null : contained.getFluid();
+                }
+            }
+            return fluid;
+        }
+    }
+
     public static final class Page {
 
         HeightWindow window;
@@ -537,20 +557,20 @@ public final class WorldgenCatalog {
         }
 
         boolean matches(ItemStack stack, boolean usage) {
+            return matches(new Query(stack), usage);
+        }
+
+        boolean matches(Query query, boolean usage) {
+            var stack = query.stack;
             for (ItemStack resource : resources) if (sameItem(resource, stack)) return true;
             if (usage) for (ItemStack host : hosts) if (sameItem(host, stack)) return true;
-            OreDictItemData data = OreDictManager.INSTANCE.getItemData(stack, true);
+            OreDictItemData data = query.data;
             if (data != null && data.mPrefix != null && data.mMaterial != null) {
                 OreDictMaterial material = data.mMaterial.mMaterial;
                 if (data.mPrefix.mNameInternal.startsWith("ore") && materials.contains(material)) return true;
                 if (data.mPrefix == OP.rockGt && rocks.contains(material)) return true;
             }
-            if (fluid != null && gregapi.data.IL.Display_Fluid.equal(stack, true, true))
-                return FL.fluid(ST.meta_(stack)) == fluid;
-            FluidStack contained = fluid == null ? null
-                : net.neoforged.neoforge.transfer.fluid.FluidUtil.getFirstStackContained(stack.copy());
-            if (fluid != null && (contained == null || contained.isEmpty())) contained = FL.getFluid(stack, true);
-            return contained != null && contained.getFluid() == fluid;
+            return fluid != null && query.fluid() == fluid;
         }
     }
 }
