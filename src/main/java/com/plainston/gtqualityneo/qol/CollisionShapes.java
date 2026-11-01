@@ -13,18 +13,16 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public final class CollisionShapes {
+    private static final VoxelShape HOPPER_BODY = Shapes.or(box(0, 10, 0, 16, 16, 16), box(4, 4, 4, 12, 10, 12));
+    private static final VoxelShape[] HOPPERS = {
+        Shapes.or(HOPPER_BODY, box(6, 0, 6, 10, 4, 10)), HOPPER_BODY,
+        Shapes.or(HOPPER_BODY, box(6, 4, 0, 10, 8, 4)), Shapes.or(HOPPER_BODY, box(6, 4, 12, 10, 8, 16)),
+        Shapes.or(HOPPER_BODY, box(0, 4, 6, 4, 8, 10)), Shapes.or(HOPPER_BODY, box(12, 4, 6, 16, 8, 10))
+    };
     private CollisionShapes() {}
 
     public static VoxelShape hopper(TileEntityBase09FacingSingle hopper) {
-        VoxelShape result = Shapes.or(box(0, 10, 0, 16, 16, 16), box(4, 4, 4, 12, 10, 12));
-        result = Shapes.or(result, switch (hopper.mFacing) {
-            case 0 -> box(6, 0, 6, 10, 4, 10);
-            case 2 -> box(6, 4, 0, 10, 8, 4);
-            case 3 -> box(6, 4, 12, 10, 8, 16);
-            case 4 -> box(0, 4, 6, 4, 8, 10);
-            case 5 -> box(12, 4, 6, 16, 8, 10);
-            default -> Shapes.empty();
-        });
+        VoxelShape result = hopper.mFacing >= 0 && hopper.mFacing < HOPPERS.length ? HOPPERS[hopper.mFacing] : HOPPER_BODY;
         if (hopper.hasCovers()) for (byte side = 0; side < 6; side++) {
             ICover cover = hopper.mCovers.mBehaviours[side];
             if (cover != null) result = Shapes.or(result, coverBox(cover.getHolderBounds(side, hopper.mCovers)),

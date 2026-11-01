@@ -1,11 +1,17 @@
 package com.plainston.gtqualityneo.client.render;
 
 import gregapi.block.multitileentity.MultiTileEntityItemInternal;
+import gregapi.block.multitileentity.MultiTileEntityClassContainer;
+import gregapi.code.ItemNBT;
+import gregapi.data.CS;
 import gregapi.data.FL;
 import gregapi.data.IL;
 import gregapi.tileentity.energy.TileEntityBase08Battery;
 import gregapi.util.ST;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
+import java.util.IdentityHashMap;
+import java.util.Map;
 
 public final class BatteryBars {
     private static final IL[] BATTERIES = {
@@ -16,6 +22,7 @@ public final class BatteryBars {
         IL.Battery_Lead_Acid_Cell_Filled, IL.Battery_Alkaline_Cell_Filled, IL.Battery_NiCd_Cell_Filled,
         IL.Battery_LiCoO2_Cell_Filled, IL.Battery_LiMn_Cell_Filled
     };
+    private static final Map<MultiTileEntityClassContainer, Integer> COLORS = new IdentityHashMap<>();
 
     private BatteryBars() {}
 
@@ -24,18 +31,30 @@ public final class BatteryBars {
             || stack.isEmpty() || !(stack.getItem() instanceof MultiTileEntityItemInternal)) return;
         MultiTileEntityItemInternal item = (MultiTileEntityItemInternal) stack.getItem();
         var registration = item.mBlock.mMultiTileEntityRegistry.getClassContainer(stack);
-        if (registration == null || !TileEntityBase08Battery.class.isAssignableFrom(registration.mClass)) return;
-        var container = item.mBlock.mMultiTileEntityRegistry.getNewTileEntityContainer(stack);
-        if (container == null || !(container.mTileEntity instanceof TileEntityBase08Battery)) return;
-        TileEntityBase08Battery battery = (TileEntityBase08Battery) container.mTileEntity;
-        if (battery.mCapacity <= 0) return;
-        int color = color(stack, battery.getPaint());
+        if (registration == null || !(registration.mCanonicalTileEntity instanceof TileEntityBase08Battery battery)) return;
+        var data = ItemNBT.get(stack);
+        long capacity = capacity(data, battery.mCapacity);
+        if (capacity <= 0) return;
+        boolean charged = registration.mParameters.getBooleanOr(CS.NBT_ACTIVE_ENERGY, false);
+        long energy = energy(data, capacity, battery.mEnergy, charged);
+        int fallback = data == null ? battery.getPaint() : data.getIntOr(CS.NBT_COLOR, battery.getPaint());
+        int color = COLORS.computeIfAbsent(registration, ignored -> color(stack));
+        if (color < 0) color = fallback;
         // Batteries have no durability bar: their only bar belongs on the bottom row.
-        ToolBars.gradientBar(graphics, x, y + 13, width(battery.mEnergy, battery.mCapacity),
+        ToolBars.gradientBar(graphics, x, y + 13, width(energy, capacity),
             shade(color, false), shade(color, true));
     }
 
-    private static int color(ItemStack stack, int fallback) {
+    static long capacity(CompoundTag data, long fallback) {
+        return data == null ? fallback : data.getLongOr(CS.NBT_CAPACITY, fallback);
+    }
+
+    static long energy(CompoundTag data, long capacity, long fallback, boolean charged) {
+        if (data != null) charged = data.getBooleanOr(CS.NBT_ACTIVE_ENERGY, charged);
+        return charged ? capacity : data == null ? fallback : data.getLongOr(CS.NBT_ENERGY, fallback);
+    }
+
+    private static int color(ItemStack stack) {
         for (int i = 0; i < BATTERIES.length; i++) {
             ItemStack base = BATTERIES[i].get(1);
             if (base.isEmpty() || stack.getItem() != base.getItem()) continue;
@@ -43,12 +62,12 @@ public final class BatteryBars {
             // Each chemical battery series registers its five tiers consecutively.
             if (tier < 0 || tier > 4) continue;
             var fluid = FL.getFluid(CELLS[i].get(1), false);
-            if (fluid == null || fluid.isEmpty()) return fallback;
+            if (fluid == null || fluid.isEmpty()) return -1;
             var gtFluid = gregapi.fluid.FluidGT.of(fluid.getFluid());
             if (gtFluid != null) return gregapi.util.UT.Code.getRGBInt(gtFluid.getRGBa());
-            return fallback;
+            return -1;
         }
-        return fallback;
+        return -1;
     }
 
     public static int width(long energy, long capacity) {

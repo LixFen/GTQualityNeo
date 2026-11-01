@@ -99,11 +99,11 @@ public final class QolClient {
             return;
         }
         if (!(event.getItemStack().getItem() instanceof MultiTileEntityItemInternal item)) return;
-        var container = item.mBlock.mMultiTileEntityRegistry.getNewTileEntityContainer(event.getItemStack());
+        var container = item.mBlock.mMultiTileEntityRegistry.getClassContainer(event.getItemStack());
         if (container == null) return;
-        if (GTQualityNeo.MOLD_SELECTOR.get() && container.mTileEntity.getClass() == MultiTileEntityMold.class)
+        if (GTQualityNeo.MOLD_SELECTOR.get() && container.mClass == MultiTileEntityMold.class)
             event.getToolTip().add(Component.translatable("gtqualityneo.tooltip.mold").withStyle(net.minecraft.ChatFormatting.DARK_GRAY));
-        else if (GTQualityNeo.STORAGE_FORM.get() && container.mTileEntity instanceof MultiTileEntityMassStorage)
+        else if (GTQualityNeo.STORAGE_FORM.get() && MultiTileEntityMassStorage.class.isAssignableFrom(container.mClass))
             event.getToolTip().add(Component.translatable("gtqualityneo.tooltip.storage").withStyle(net.minecraft.ChatFormatting.DARK_GRAY));
     }
 
