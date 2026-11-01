@@ -2,6 +2,13 @@ package com.plainston.gtqualityneo.integration.jade;
 
 import gregapi.block.multitileentity.MultiTileEntityRegistry;
 import gregapi.data.CS;
+import gregapi.data.FL;
+import gregapi.util.ST;
+import gregapi.util.UT;
+import gregapi.fluid.FluidTankGT;
+import gregapi.oredict.OreDictMaterialStack;
+import gregapi.block.multitileentity.IMultiTileEntity;
+import com.plainston.gtqualityneo.mixin.jade.DeviceDataAccessors;
 import gregapi.data.IL;
 import gregapi.oredict.OreDictPrefix;
 import gregapi.tileentity.connectors.MultiTileEntityAxle;
@@ -66,11 +73,9 @@ public enum GT6DetailsProvider implements IServerDataProvider<BlockAccessor> {
             tile = target;
         }
         String kind = kind(tile);
-        if (kind.isEmpty() || !(tile instanceof TileEntityBase01Root root)) return;
-        CompoundTag saved = new CompoundTag();
-        root.writeToNBT(saved);
+        if (kind.isEmpty() || !(tile instanceof TileEntityBase01Root)) return;
         CompoundTag snapshot = new CompoundTag();
-        copyHudTags(tile, saved, snapshot);
+        writeHudTags(tile, snapshot);
         snapshot.putString("kind", kind);
         snapshot.putBoolean("through_part", throughPart);
         writeHudParameters(snapshot);
@@ -85,7 +90,7 @@ public enum GT6DetailsProvider implements IServerDataProvider<BlockAccessor> {
         if (tile instanceof MultiTileEntityCrucible crucible) snapshot.putLong("gtquality.max_temperature", crucible.getTemperatureMax((byte) 0));
         if (tile instanceof MultiTileEntityMold mold) {
             snapshot.putLong("gtquality.max_temperature", mold.getMoldMaxTemperature());
-            OreDictPrefix prefix = mold.getMoldRecipe(saved.getIntOr("gt.mold", 0));
+            OreDictPrefix prefix = mold.getMoldRecipe(snapshot.getIntOr("gt.mold", 0));
             snapshot.putString("mold_prefix", prefix == null ? "" : prefix.mNameInternal);
         }
         // Preserve modern item components and original slot indexes, rather than decoding legacy saved stacks.
@@ -132,59 +137,78 @@ public enum GT6DetailsProvider implements IServerDataProvider<BlockAccessor> {
         return "";
     }
 
-    private static void copyHudTags(BlockEntity tile, CompoundTag source, CompoundTag target) {
-        copyTags(source, target, "gt.mte.id");
+    static void writeHudTags(BlockEntity tile, CompoundTag target) {
+        if (tile instanceof IMultiTileEntity mte) target.putShort("gt.mte.id", mte.getMultiTileEntityID());
         if (tile instanceof MultiTileEntityMold) {
-            copyTags(source, target, "gt.temperature", "gt.mold", "gt.connection", "gt.mode");
+            var mold = (DeviceDataAccessors.Mold) tile;
+            UT.NBT.setNumber(target, "gt.temperature", mold.gtqualityneo$temperature());
+            UT.NBT.setNumber(target, "gt.mold", mold.gtqualityneo$shape());
+            target.putByte("gt.connection", mold.gtqualityneo$directions());
+            UT.NBT.setBoolean(target, "gt.mode", mold.gtqualityneo$redstone());
         } else if (tile instanceof MultiTileEntitySmeltery || tile instanceof MultiTileEntityCrucible) {
-            copyTags(source, target, "gt.temperature", "gt.materials");
+            var melting = (DeviceDataAccessors.Melting) tile;
+            UT.NBT.setNumber(target, "gt.temperature", melting.gtqualityneo$temperature());
+            OreDictMaterialStack.saveList("gt.materials", target, melting.gtqualityneo$materials());
         } else if (tile instanceof MultiTileEntityBoilerTank) {
-            copyTags(source, target, "gt.energy", "gt.tank.0", "gt.tank.1", "gt.eff");
-        } else if (tile instanceof MultiTileEntityGeneratorSolid) {
-            copyTags(source, target, "gt.energy", "gt.active", "gt.invlist");
-        } else if (tile instanceof MultiTileEntityGeneratorFluidBed) {
-            copyTags(source, target, "gt.energy", "gt.active", "gt.invlist", "gt.tank");
-        } else if (tile instanceof MultiTileEntityGeneratorLiquid) {
-            copyTags(source, target, "gt.active", "gt.tank");
-        } else if (tile instanceof MultiTileEntityRock) {
-            copyTags(source, target, "gt.value");
-        } else if (tile instanceof TileEntityBase08FluidContainer || tile instanceof TileEntityBase08Barrel
-            || tile instanceof MultiTileEntityTank) {
-                copyTags(source, target, "gt.tank");
-            } else if (tile instanceof MultiTileEntityMultiBlockPart) {
-                copyTags(source, target, "gt.target", "gt.target.x", "gt.target.y", "gt.target.z");
-            } else if (tile instanceof MultiTileEntityAnvil) {
-                copyTags(source, target, "gt.durability", "gt.facing");
-            } else if (tile instanceof MultiTileEntityEngineSteam) {
-                copyTags(
-                    source,
-                    target,
-                    CS.NBT_ENERGY,
-                    CS.NBT_VISUAL,
-                    CS.NBT_EFFICIENCY,
-                    CS.NBT_ACTIVE,
-                    CS.NBT_STOPPED);
-            } else if (tile instanceof MultiTileEntityTurbineSteam) {
-                copyTags(source, target, "gt.output.su", "gt.tank.0");
-            } else if (tile instanceof MultiTileEntityFluidSpring) {
-                copyTags(source, target, "gt.spring");
-            } else if (tile instanceof MultiTileEntityMixingBowl) {
-                copyTags(source, target, "gt.invlist");
-                for (int i = 0; i < 6; i++) copyTags(source, target, "gt.tank.in." + i);
-                for (int i = 0; i < 2; i++) copyTags(source, target, "gt.tank.out." + i);
-            } else if (tile instanceof MultiTileEntityPipeFluid) {
-                copyTags(source, target, "gt.mlast.8");
-                for (int i = 0; i < 9; i++) copyTags(source, target, "gt.tank." + i);
-            } else if (tile instanceof MultiTileEntitySiftingTable) {
-                copyTags(source, target, "gt.invlist");
-            } else if (tile instanceof MultiTileEntityMotorLiquid) {
-                copyTags(source, target, "gt.energy", "gt.tank.0", "gt.tank.1");
-            } else if (tile instanceof MultiTileEntityReactorCore) {
-                copyTags(source, target, "gt.tank.0", "gt.tank.1", "gt.stopped", "gt.invlist");
-                for (int i = 0; i < 4; i++) copyTags(source, target, "gt.value.o." + i);
-            } else if (tile instanceof MultiTileEntityBush) {
-                copyTags(source, target, "gt.state", "gt.progress", "gt.value");
-            }
+            UT.NBT.setNumber(target, "gt.energy", ((DeviceDataAccessors.Energy) tile).gtqualityneo$energy());
+            short efficiency = ((DeviceDataAccessors.Efficiency) tile).gtqualityneo$efficiency();
+            if (efficiency != 10000) target.putShort("gt.eff", efficiency);
+            writeTanks(target, "gt.tank.", ((DeviceDataAccessors.Boiler) tile).gtqualityneo$tanks());
+        } else if (tile instanceof MultiTileEntityGeneratorSolid generator) {
+            UT.NBT.setNumber(target, "gt.energy", ((DeviceDataAccessors.Energy) tile).gtqualityneo$energy());
+            UT.NBT.setBoolean(target, "gt.active", generator.getStateRunningActively());
+        } else if (tile instanceof MultiTileEntityGeneratorFluidBed generator) {
+            UT.NBT.setNumber(target, "gt.energy", ((DeviceDataAccessors.Energy) tile).gtqualityneo$energy());
+            UT.NBT.setBoolean(target, "gt.active", generator.getStateRunningActively());
+            ((DeviceDataAccessors.FuelTank) tile).gtqualityneo$fuelTank().writeToNBT(target, "gt.tank");
+        } else if (tile instanceof MultiTileEntityGeneratorLiquid generator) {
+            UT.NBT.setBoolean(target, "gt.active", generator.getStateRunningActively());
+            ((DeviceDataAccessors.FuelTank) tile).gtqualityneo$fuelTank().writeToNBT(target, "gt.tank");
+        } else if (tile instanceof MultiTileEntityRock rock) {
+            ST.save(target, "gt.value", rock.mRock);
+        } else if (tile instanceof TileEntityBase08FluidContainer container) {
+            container.mTank.writeToNBT(target, "gt.tank");
+        } else if (tile instanceof TileEntityBase08Barrel barrel) {
+            barrel.mTank.writeToNBT(target, "gt.tank");
+        } else if (tile instanceof MultiTileEntityTank tank) {
+            tank.mTank.writeToNBT(target, "gt.tank");
+        } else if (tile instanceof MultiTileEntityAnvil anvil) {
+            UT.NBT.setNumber(target, "gt.durability", anvil.mDurability);
+            target.putByte("gt.facing", anvil.mFacing);
+        } else if (tile instanceof MultiTileEntityEngineSteam engine) {
+            UT.NBT.setNumber(target, CS.NBT_ENERGY, ((DeviceDataAccessors.Energy) tile).gtqualityneo$energy());
+            target.putByte(CS.NBT_VISUAL, ((DeviceDataAccessors.SteamEngine) tile).gtqualityneo$state());
+            target.putShort(CS.NBT_EFFICIENCY, ((DeviceDataAccessors.Efficiency) tile).gtqualityneo$efficiency());
+            UT.NBT.setBoolean(target, CS.NBT_ACTIVE, ((DeviceDataAccessors.SteamEngine) tile).gtqualityneo$active());
+            UT.NBT.setBoolean(target, CS.NBT_STOPPED, !engine.getStateOnOff());
+        } else if (tile instanceof MultiTileEntityTurbineSteam turbine) {
+            UT.NBT.setNumber(target, "gt.output.su", turbine.mEnergyProducedNextTick);
+            turbine.mTank.writeToNBT(target, "gt.tank.0");
+        } else if (tile instanceof MultiTileEntityFluidSpring spring) {
+            FL.save(target, "gt.spring", spring.mFluid);
+        } else if (tile instanceof MultiTileEntityMixingBowl) {
+            var mixing = (DeviceDataAccessors.Mixing) tile;
+            writeTanks(target, "gt.tank.in.", mixing.gtqualityneo$inputs());
+            writeTanks(target, "gt.tank.out.", mixing.gtqualityneo$outputs());
+        } else if (tile instanceof MultiTileEntityPipeFluid pipe) {
+            writeTanks(target, "gt.tank.", pipe.mTanks);
+            if (pipe.mTanks.length > 8) target.putByte("gt.mlast.8", pipe.mLastReceivedFrom[8]);
+        } else if (tile instanceof MultiTileEntityMotorLiquid motor) {
+            UT.NBT.setNumber(target, "gt.energy", motor.mEnergy);
+            writeTanks(target, "gt.tank.", motor.mTanks);
+        } else if (tile instanceof MultiTileEntityReactorCore reactor) {
+            writeTanks(target, "gt.tank.", reactor.mTanks);
+            UT.NBT.setBoolean(target, "gt.stopped", reactor.mStopped);
+            for (int i = 0; i < 4; i++) UT.NBT.setNumber(target, "gt.value.o." + i, reactor.oNeutronCounts[i]);
+        } else if (tile instanceof MultiTileEntityBush bush) {
+            target.putByte("gt.state", bush.mStage);
+            target.putByte("gt.progress", bush.mGrowth);
+            ST.save(target, "gt.value", bush.mBerry);
+        }
+    }
+
+    private static void writeTanks(CompoundTag target, String prefix, FluidTankGT[] tanks) {
+        for (int i = 0; i < tanks.length; i++) tanks[i].writeToNBT(target, prefix + i);
     }
 
     private static void copyTags(CompoundTag source, CompoundTag target, String... keys) {

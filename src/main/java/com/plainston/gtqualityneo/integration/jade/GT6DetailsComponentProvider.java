@@ -171,8 +171,9 @@ public enum GT6DetailsComponentProvider implements IBlockComponentProvider {
     }
 
     private static void appendSolidGenerator(ITooltip tooltip, BlockAccessor accessor, CompoundTag data) {
-        ItemStack fuel = getInventory(accessor, data).get(0);
-        ItemStack ash = getInventory(accessor, data).get(1);
+        var inventory = getInventory(accessor, data);
+        ItemStack fuel = inventory.get(0);
+        ItemStack ash = inventory.get(1);
         if (ash == null && fuel != null && FM.Furnace.mRecipeItemMap.get(fuel) == null) {
             ash = fuel;
             fuel = null;
@@ -189,8 +190,9 @@ public enum GT6DetailsComponentProvider implements IBlockComponentProvider {
     }
 
     private static void appendFluidBed(ITooltip tooltip, BlockAccessor accessor, CompoundTag data, boolean throughMultiblockPart) {
-        ItemStack fuel = getInventory(accessor, data).get(0);
-        ItemStack ash = getInventory(accessor, data).get(1);
+        var inventory = getInventory(accessor, data);
+        ItemStack fuel = inventory.get(0);
+        ItemStack ash = inventory.get(1);
         if (ash == null && fuel != null && FM.FluidBed.mRecipeItemMap.get(fuel) == null) {
             ash = fuel;
             fuel = null;
