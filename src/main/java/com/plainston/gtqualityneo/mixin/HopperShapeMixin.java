@@ -23,7 +23,9 @@ public abstract class HopperShapeMixin {
     @Inject(method = "getCollisionShape", at = @At("HEAD"), cancellable = true)
     private void gtquality$shape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context,
                                 CallbackInfoReturnable<VoxelShape> cir) {
-        if (!com.plainston.gtqualityneo.GTQualityNeo.HOPPER_SHAPES.get()) return;
+        // Block shape caches are built before server configs load (also on the client).
+        if (!com.plainston.gtqualityneo.GTQualityNeo.SERVER_CONFIG.isLoaded()
+            || !com.plainston.gtqualityneo.GTQualityNeo.HOPPER_SHAPES.get()) return;
         var tile = world.getBlockEntity(pos);
         if (!(tile instanceof MultiTileEntityHopper || tile instanceof MultiTileEntityQueueHopper)) return;
         cir.setReturnValue(CollisionShapes.hopper((gregapi.tileentity.base.TileEntityBase09FacingSingle) tile));
@@ -32,7 +34,8 @@ public abstract class HopperShapeMixin {
     @Inject(method = "getShape", at = @At("HEAD"), cancellable = true)
     private void gtquality$toolSelection(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context,
                                         CallbackInfoReturnable<VoxelShape> cir) {
-        if (!com.plainston.gtqualityneo.GTQualityNeo.HOPPER_SHAPES.get()) return;
+        if (!com.plainston.gtqualityneo.GTQualityNeo.SERVER_CONFIG.isLoaded()
+            || !com.plainston.gtqualityneo.GTQualityNeo.HOPPER_SHAPES.get()) return;
         var tile = world.getBlockEntity(pos);
         if (!(tile instanceof MultiTileEntityHopper || tile instanceof MultiTileEntityQueueHopper)) return;
         if (context instanceof EntityCollisionContext entity && entity.getEntity() instanceof Player player) {
