@@ -9,7 +9,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.event.entity.living.LivingEquipmentChangeEvent;
-import net.neoforged.neoforge.event.tick.EntityTickEvent;
+import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 
 public final class UniversalHazmat {
     private static final EquipmentSlot[] SLOTS = {EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET};
@@ -46,8 +46,10 @@ public final class UniversalHazmat {
             if (!armor.hasModifier(BONUS)) armor.addTransientModifier(new AttributeModifier(BONUS, 16, AttributeModifier.Operation.ADD_VALUE));
         } else armor.removeModifier(BONUS);
     }
-    public static void tick(EntityTickEvent.Pre event) {
+    public static void joined(EntityJoinLevelEvent event) {
         if (event.getEntity() instanceof LivingEntity wearer) update(wearer);
     }
-    public static void equipmentChanged(LivingEquipmentChangeEvent event) { update(event.getEntity()); }
+    public static void equipmentChanged(LivingEquipmentChangeEvent event) {
+        if (event.getSlot().getType() == EquipmentSlot.Type.HUMANOID_ARMOR) update(event.getEntity());
+    }
 }

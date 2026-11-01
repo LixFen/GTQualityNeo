@@ -82,7 +82,7 @@ public final class GTQualityNeo {
         NeoForge.EVENT_BUS.addListener(QolEvents::moldClick);
         NeoForge.EVENT_BUS.addListener(com.plainston.gtqualityneo.qol.CircuitInteraction::rightClickItem);
         NeoForge.EVENT_BUS.addListener(com.plainston.gtqualityneo.qol.CircuitInteraction::rightClickBlock);
-        NeoForge.EVENT_BUS.addListener(com.plainston.gtqualityneo.qol.UniversalHazmat::tick);
+        NeoForge.EVENT_BUS.addListener(com.plainston.gtqualityneo.qol.UniversalHazmat::joined);
         NeoForge.EVENT_BUS.addListener(com.plainston.gtqualityneo.qol.UniversalHazmat::equipmentChanged);
         NeoForge.EVENT_BUS.addListener(com.plainston.gtqualityneo.qol.ObstructionConfig::serverStarted);
         NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.server.ServerStoppedEvent event) ->
