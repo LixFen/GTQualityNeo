@@ -17,8 +17,9 @@ public final class ScannerClient {
         ScannerIntegration.receiveFrame = ClientState::receive;
         bus.addListener(ScannerClient::layers);
         NeoForge.EVENT_BUS.addListener(ScannerClient::logout);
+        NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.client.event.ClientResourceLoadFinishedEvent event) -> ScanHud.clear());
     }
-    private static void logout(ClientPlayerNetworkEvent.LoggingOut event) { ClientState.clear(); }
+    private static void logout(ClientPlayerNetworkEvent.LoggingOut event) { ClientState.clear(); ScanHud.clear(); }
     private static void layers(RegisterGuiLayersEvent event) {
         event.registerAboveAll(Identifier.fromNamespaceAndPath(ScannerIntegration.ID, "target"), (graphics, delta) -> ScanHud.draw(graphics));
     }

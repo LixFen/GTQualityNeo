@@ -15,10 +15,16 @@ public final class ScanMapRaster {
     private int side;
     private int[] pixels = new int[0], heights = new int[0];
     private String[] keys = new String[0];
+    private int[] dirtyChunks = new int[0];
+    private int dirtyCount;
+    private boolean fullUpdate;
     public int side() { return side; }
     public int[] pixels() { return pixels; }
     public String key(int x, int z) { return keys[z * side + x]; }
     public int height(int x, int z) { return heights[z * side + x]; }
+    public boolean fullUpdate() { return fullUpdate; }
+    public int dirtyCount() { return dirtyCount; }
+    public int dirtyChunk(int index) { return dirtyChunks[index]; }
 
     /** Returns the number of pixels updated, zero when no texture upload is needed. */
     public int update(ScanGrid nextGrid, Collection<ScanNetwork.ChunkData> chunks, Set<String> nextFilter,
@@ -27,14 +33,18 @@ public final class ScanMapRaster {
         if (reset) {
             grid = nextGrid; side = grid == null ? 0 : grid.width() * 16;
             applied = new ScanNetwork.ChunkData[grid == null ? 0 : grid.width() * grid.width()];
+            dirtyChunks = new int[applied.length];
             pixels = new int[side * side]; heights = new int[pixels.length]; keys = new String[pixels.length];
             Arrays.fill(pixels, 0xff182433); colours.clear();
         }
         boolean recolour = reset || terrain != nextTerrain || !filter.equals(nextFilter);
+        dirtyCount = 0;
+        fullUpdate = recolour;
         if (recolour) { filter = Set.copyOf(nextFilter); terrain = nextTerrain; }
         int changed = reset ? pixels.length : 0;
         for (var chunk : chunks) {
             if (!recolour && applied[chunk.index()] == chunk) continue;
+            dirtyChunks[dirtyCount++] = chunk.index();
             applied[chunk.index()] = chunk;
             int cx = chunk.index() / grid.width() * 16, cz = chunk.index() % grid.width() * 16;
             // Palette colour lookup (especially fluid models) occurs once per resource, never per pixel.

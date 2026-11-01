@@ -43,6 +43,7 @@ public final class ScanService {
         send(serverPlayer, ScanNetwork.Frame.begin(id, job.grid, job.mode, job.level.dimension().identifier()));
     }
     public static void tick(ServerTickEvent.Post event) {
+        if (JOBS.isEmpty()) return;
         long deadline = System.nanoTime() + ScanConfig.BUDGET_MS.get() * 1_000_000L;
         // Rotate the queue after a time slice so one large scan cannot starve another player.
         for (UUID key : List.copyOf(JOBS.keySet())) {
@@ -152,9 +153,10 @@ public final class ScanService {
             for (; cursor < end; cursor++) {
                 int x = cursor & 15, z = (cursor >>> 4) & 15, localY = cursor >>> 8;
                 var state = current.getBlockState(x, localY, z);
-                if (!resolver.mayMatch(state)) continue;
+                var resource = resolver.resolveBlock(state);
+                if (resource == null) continue;
                 int y = chunk.getSectionYFromSectionIndex(section) * 16 + localY;
-                record(x, y, z, resolver.resolveBlock(state));
+                record(x, y, z, resource);
             }
             if (cursor == 4096) { cursor = 0; section++; }
             return section == sections.length;

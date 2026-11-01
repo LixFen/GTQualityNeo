@@ -10,6 +10,7 @@ import com.lowdragmc.lowdraglib2.gui.ui.styletemplate.MCSprites;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.DynamicTexture;
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.resources.Identifier;
 import java.util.*;
 import java.util.function.Consumer;
@@ -78,6 +79,7 @@ public final class MapElement extends UIElement {
         int changed = raster.update(grid, ClientState.chunks.values(), filter, terrain, ClientState::colour);
         side = raster.side();
         if (texture == null || texture.getPixels().getWidth() != side) {
+            closeTexture();
             texture = new DynamicTexture("GT6 scanner map", side, side, false);
             Minecraft.getInstance().getTextureManager().register(textureId, texture);
             changed = side * side;
@@ -85,8 +87,19 @@ public final class MapElement extends UIElement {
         if (changed == 0) return;
         var image = texture.getPixels();
         int[] pixels = raster.pixels();
-        for (int z = 0; z < side; z++) for (int x = 0; x < side; x++) image.setPixel(x, z, pixels[z * side + x]);
-        texture.upload();
+        if (raster.fullUpdate() || changed == side * side) {
+            for (int z = 0; z < side; z++) for (int x = 0; x < side; x++) image.setPixel(x, z, pixels[z * side + x]);
+            texture.upload();
+        } else {
+            var encoder = RenderSystem.getDevice().createCommandEncoder();
+            for (int i = 0; i < raster.dirtyCount(); i++) {
+                int index = raster.dirtyChunk(i);
+                int cx = index / grid.width() * 16, cz = index % grid.width() * 16;
+                for (int z = cz; z < cz + 16; z++) for (int x = cx; x < cx + 16; x++)
+                    image.setPixel(x, z, pixels[z * side + x]);
+                encoder.writeToTexture(texture.getTexture(), image, 0, 0, cx, cz, 16, 16, cx, cz);
+            }
+        }
     }
     public void closeTexture() {
         if (texture == null) return;

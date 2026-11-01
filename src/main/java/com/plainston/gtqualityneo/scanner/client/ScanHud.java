@@ -7,6 +7,28 @@ import net.minecraft.network.chat.Component;
 import java.util.*;
 
 final class ScanHud {
+    private static ScanNetwork.ChunkData cachedChunk;
+    private static Set<String> cachedFilter = Set.of();
+    private static net.minecraft.locale.Language language;
+    private static List<Row> rows = List.of();
+    private record Row(Component text, int width, int colour) {}
+
+    private static List<Row> rows(ScanNetwork.ChunkData chunk) {
+        var currentLanguage = net.minecraft.locale.Language.getInstance();
+        if (chunk != cachedChunk || language != currentLanguage || !cachedFilter.equals(ClientState.filter)) {
+            cachedChunk = chunk;
+            language = currentLanguage;
+            cachedFilter = Set.copyOf(ClientState.filter);
+            rows = chunk.palette().stream().filter(r -> cachedFilter.isEmpty() || cachedFilter.contains(r.key()))
+                .sorted(Comparator.comparingInt(ScanNetwork.Resource::count).reversed()).limit(5).map(r -> {
+                    var text = Component.literal(ClientState.name(r.key()).getString() + "  " + r.count());
+                    return new Row(text, Minecraft.getInstance().font.width(text), ClientState.colour(r));
+                }).toList();
+        }
+        return rows;
+    }
+
+    static void clear() { cachedChunk = null; language = null; cachedFilter = Set.of(); rows = List.of(); }
     static void draw(GuiGraphicsExtractor graphics) {
         var mc = Minecraft.getInstance();
         var player = mc.player;
@@ -19,12 +41,9 @@ final class ScanHud {
             if (cx >= 0 && cz >= 0 && cx < ClientState.grid.width() && cz < ClientState.grid.width()) {
                 var chunk = ClientState.chunks.get(cx * ClientState.grid.width() + cz);
                 if (chunk != null && chunk.available()) {
-                    var entries = chunk.palette().stream().filter(r -> ClientState.filter.isEmpty() || ClientState.filter.contains(r.key()))
-                            .sorted(Comparator.comparingInt(ScanNetwork.Resource::count).reversed()).limit(5).toList();
-                    for (var r : entries) {
-                        String line = ClientState.name(r.key()).getString() + "  " + r.count();
-                        graphics.fill(x - 2, y - 1, x + mc.font.width(line) + 3, y + 10, 0xd9101b29);
-                        graphics.text(mc.font, Component.literal(line), x, y, ClientState.colour(r), false); y += 11;
+                    for (var row : rows(chunk)) {
+                        graphics.fill(x - 2, y - 1, x + row.width() + 3, y + 10, 0xd9101b29);
+                        graphics.text(mc.font, row.text(), x, y, row.colour(), false); y += 11;
                     }
                 }
             }
