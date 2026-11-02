@@ -30,11 +30,11 @@
     "defaultRequire": 1
   },
   "client": [
-    "client.JeiMachineCategoryMixin",
+    "client.JeiMachineRegistrationMixin",
     "client.JeiDynamicIngredientsMixin",
     "client.JeiDynamicIngredientsExtractMixin",
-    "client.JeiMachineLookupMixin",
     "client.JeiRecipeMapRevisionMixin",
+    "client.JeiRecipeMapQueryMixin",
     "client.RecipeRegistrationCollisionMixin",
     "client.JeiRecipeConfigMixin",
     "client.ToolModelMixin",

@@ -1,8 +1,10 @@
+// 兼容说明：依赖 GT6w alpha.17 / 当前 JEI 的接口；未来上游更新后本适配可能过时，需复核。
 package com.plainston.gtqualityneo.integration;
 
 import com.plainston.gtqualityneo.GTQualityNeo;
 import com.plainston.gtqualityneo.client.screen.CreativeTankScreen;
-import com.plainston.gtqualityneo.integration.jei.MergedCraftingRecipes;
+import com.plainston.gtqualityneo.integration.jei.crafting.MergedCraftingRecipes;
+import com.plainston.gtqualityneo.integration.jei.machine.MachineRecipes;
 import gregapi.gui.ContainerCommon;
 import gregapi.gui.Slot_Base;
 import gregapi.jei.GT6_JEI_CraftingCategory;
@@ -28,11 +30,13 @@ import java.util.Optional;
 
 @JeiPlugin
 public final class GTQualityJeiPlugin implements IModPlugin {
+    private final MachineRecipes machines = new MachineRecipes();
     private mezz.jei.api.runtime.IJeiRuntime runtime;
     /** Read once per JEI load, so the extension, the lookup and the hidden GT6 category always agree. */
     private boolean mergeCrafting;
     @Override public void onRuntimeAvailable(mezz.jei.api.runtime.IJeiRuntime runtime) {
         this.runtime = runtime;
+        machines.runtime(runtime);
         if (mergeCrafting) try { runtime.getRecipeManager().hideRecipeCategory(GT6_JEI_CraftingCategory.TYPE); }
         catch (RuntimeException e) { com.mojang.logging.LogUtils.getLogger().warn("Could not hide GT6's separate crafting category", e); }
     }
@@ -43,14 +47,17 @@ public final class GTQualityJeiPlugin implements IModPlugin {
     }
     @Override public void onRuntimeUnavailable() {
         runtime = null;
-        com.plainston.gtqualityneo.integration.jei.DynamicRecipeIngredients.invalidateResources();
+        machines.runtime(null);
+        com.plainston.gtqualityneo.integration.jei.compat.DynamicRecipeIngredients.invalidateResources();
     }
     @Override public void registerCategories(mezz.jei.api.registration.IRecipeCategoryRegistration registration) {
+        machines.registerCategories(registration);
         if (GTQualityNeo.JEI_MULTIBLOCKS.get()) registration.addRecipeCategories(new com.plainston.gtqualityneo.integration.multiblock.MultiblockCategory(registration.getJeiHelpers(), () -> runtime));
         if (GTQualityNeo.JEI_WORLDGEN.get()) registration.addRecipeCategories(
             new com.plainston.gtqualityneo.integration.worldgen.WorldgenCategory(registration.getJeiHelpers().getGuiHelper(), () -> runtime));
     }
     @Override public void registerAdvanced(mezz.jei.api.registration.IAdvancedRegistration registration) {
+        machines.registerAdvanced(registration);
         if (GTQualityNeo.JEI_MULTIBLOCKS.get()) registration.addSimpleRecipeManagerPlugin(
             com.plainston.gtqualityneo.integration.multiblock.MultiblockCategory.TYPE, new com.plainston.gtqualityneo.integration.multiblock.MultiblockLookup());
         if (GTQualityNeo.JEI_WORLDGEN.get()) registration.addSimpleRecipeManagerPlugin(
@@ -59,6 +66,9 @@ public final class GTQualityJeiPlugin implements IModPlugin {
         if (mergeCrafting) registration.addSimpleRecipeManagerPlugin(RecipeTypes.CRAFTING, new MergedCraftingRecipes.Lookup(() -> runtime));
     }
     @Override public Identifier getPluginUid() { return Identifier.fromNamespaceAndPath(GTQualityNeo.MOD_ID, "qol"); }
+    @Override public void registerRecipeCatalysts(mezz.jei.api.registration.IRecipeCatalystRegistration registration) {
+        machines.registerCatalysts(registration);
+    }
     @Override public void registerRecipeTransferHandlers(IRecipeTransferRegistration registration) {
         registration.addRecipeTransferHandler(new TableTransfer<>(GT6_JEI_CraftingCategory.TYPE));
         registration.addRecipeTransferHandler(new TableTransfer<>(RecipeTypes.CRAFTING));

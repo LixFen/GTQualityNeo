@@ -1,9 +1,9 @@
-package com.plainston.gtqualityneo.integration.jei;
+// 兼容说明：基于 GT6w alpha.17；未来 GT6w 更新 JEI 注册、配方结构或生成规则后，本文件可能过时，需复核。
+package com.plainston.gtqualityneo.integration.jei.machine;
 
 import com.plainston.gtqualityneo.client.ui.MachineProgress;
 import gregapi.data.FL;
 import gregapi.data.LH;
-import gregapi.jei.GT6_JEI_RecipeCategory;
 import gregapi.recipes.Recipe;
 import gregapi.recipes.Recipe.RecipeMap;
 import gregapi.util.ST;
@@ -42,7 +42,7 @@ public final class MachineRecipeDisplay {
             var options = RecipeVariants.itemOptions(recipe, i);
             if (options.isEmpty()) continue;
             var stack = options.getFirst();
-            for (var option : options) slot.add(GT6_JEI_RecipeCategory.shown(option));
+            for (var option : options) slot.add(ST.zerosize(option) ? ST.amount(option.getCount(), option) : option);
             if (ST.size(stack) == 0)
                 slot.addRichTooltipCallback((view, tooltip) -> tooltip.add(Component.literal(
                     LH.Chat.BLINKING_CYAN + LH.tt("Does not get consumed in the process"))));

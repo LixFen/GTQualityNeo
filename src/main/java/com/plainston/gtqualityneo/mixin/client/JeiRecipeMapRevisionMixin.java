@@ -1,8 +1,10 @@
+// 兼容说明：依赖 GT6w alpha.17 / 当前 JEI 的接口；未来上游更新后本适配可能过时，需复核。
 package com.plainston.gtqualityneo.mixin.client;
 
-import com.plainston.gtqualityneo.integration.jei.RecipeMapRevision;
-import com.plainston.gtqualityneo.integration.jei.RegisteredRecipeVariants;
-import com.plainston.gtqualityneo.integration.jei.RegistrationCollisionIndex;
+import com.plainston.gtqualityneo.integration.jei.compat.RecipeMapRevision;
+import com.plainston.gtqualityneo.integration.jei.machine.RegisteredRecipeVariants;
+import com.plainston.gtqualityneo.integration.jei.compat.RegistrationCollisionIndex;
+import com.plainston.gtqualityneo.integration.jei.machine.RecipeQueryIndex;
 import gregapi.recipes.IRecipeMapHandler;
 import gregapi.recipes.Recipe;
 import gregapi.recipes.Recipe.RecipeMap;
@@ -15,10 +17,20 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.objectweb.asm.Opcodes;
 
 @Mixin(value = RecipeMap.class, remap = false)
-public abstract class JeiRecipeMapRevisionMixin implements RecipeMapRevision, RegistrationCollisionIndex.Holder {
+public abstract class JeiRecipeMapRevisionMixin implements RecipeMapRevision, RegistrationCollisionIndex.Holder, RecipeQueryIndex.Holder {
     @Unique private volatile long gtqualityneo$revision;
     @Unique private RegisteredRecipeVariants gtqualityneo$variants;
     @Unique private RegistrationCollisionIndex gtqualityneo$collisions;
+    @Unique private RecipeQueryIndex gtqualityneo$queryIndex;
+    @Unique private volatile long gtqualityneo$resetVersion;
+    @Override public synchronized RecipeQueryIndex gtqualityneo$queryIndex() {
+        if (gtqualityneo$queryIndex == null) {
+            gtqualityneo$queryIndex = new RecipeQueryIndex();
+            gtqualityneo$queryIndex.rebuild(((RecipeMap) (Object) this).mRecipeList);
+        }
+        return gtqualityneo$queryIndex;
+    }
+    @Override public long gtqualityneo$recipeResetVersion() { return gtqualityneo$resetVersion; }
 
     @Override public synchronized RegistrationCollisionIndex gtqualityneo$collisionIndex() {
         if (gtqualityneo$collisions == null) gtqualityneo$collisions = new RegistrationCollisionIndex();
@@ -46,6 +58,7 @@ public abstract class JeiRecipeMapRevisionMixin implements RecipeMapRevision, Re
     private void gtqualityneo$added(Recipe recipe, boolean logErrors, boolean addConfig, CallbackInfoReturnable<Recipe> cir) {
         gtqualityneo$recipeVariants().add(recipe);
         gtqualityneo$collisionIndex().add(recipe);
+        if (gtqualityneo$queryIndex != null) gtqualityneo$queryIndex.add(recipe);
         gtqualityneo$revision++;
     }
 
@@ -54,24 +67,28 @@ public abstract class JeiRecipeMapRevisionMixin implements RecipeMapRevision, Re
         if (cir.getReturnValue()) {
             gtqualityneo$recipeVariants().remove(recipe);
             gtqualityneo$collisionIndex().remove(recipe);
+            if (gtqualityneo$queryIndex != null) gtqualityneo$queryIndex.remove(recipe);
+            gtqualityneo$resetVersion++;
             gtqualityneo$revision++;
         }
     }
 
     @Inject(method = "add(Lgregapi/recipes/IRecipeMapHandler;)Z", at = @At("RETURN"))
     private void gtqualityneo$handlerAdded(IRecipeMapHandler handler, CallbackInfoReturnable<Boolean> cir) {
-        if (cir.getReturnValue()) gtqualityneo$revision++;
+        if (cir.getReturnValue()) { gtqualityneo$resetVersion++; gtqualityneo$revision++; }
     }
 
     @Inject(method = "removeSameHandler", at = @At("RETURN"))
     private void gtqualityneo$handlersRemoved(IRecipeMapHandler template, CallbackInfoReturnable<Integer> cir) {
-        if (cir.getReturnValue() > 0) gtqualityneo$revision++;
+        if (cir.getReturnValue() > 0) { gtqualityneo$resetVersion++; gtqualityneo$revision++; }
     }
 
     @Inject(method = "reInit()V", at = @At("RETURN"))
     private void gtqualityneo$rebuilt(CallbackInfo ci) {
         gtqualityneo$recipeVariants().rebuild(((RecipeMap) (Object) this).mRecipeList);
         gtqualityneo$collisionIndex().rebuild(((RecipeMap) (Object) this).mRecipeList);
+        if (gtqualityneo$queryIndex != null) gtqualityneo$queryIndex.rebuild(((RecipeMap) (Object) this).mRecipeList);
+        gtqualityneo$resetVersion++;
         gtqualityneo$revision++;
     }
 }

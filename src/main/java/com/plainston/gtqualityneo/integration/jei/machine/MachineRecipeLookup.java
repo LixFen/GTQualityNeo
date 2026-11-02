@@ -1,4 +1,8 @@
-package com.plainston.gtqualityneo.integration.jei;
+// 兼容说明：基于 GT6w alpha.17；未来 GT6w 更新 JEI 注册、配方结构或生成规则后，本文件可能过时，需复核。
+package com.plainston.gtqualityneo.integration.jei.machine;
+
+import com.plainston.gtqualityneo.integration.jei.cache.RecipeConfigBatch;
+import com.plainston.gtqualityneo.integration.jei.compat.RecipeMapRevision;
 
 import gregapi.data.CS;
 import gregapi.jei.GT6_JEI_StartMaps;
@@ -22,29 +26,42 @@ public final class MachineRecipeLookup {
     private final RecipeMap map;
     private final RegisteredRecipeVariants variants;
     private final Supplier<RecipeVariants.Mode> mode;
+    private final boolean standardQueries;
     private Stamp stamp;
     private List<Recipe> all;
-    private final Map<Focus, List<Recipe>> focused = new LinkedHashMap<>(16, 0.75f, true) {
-        @Override protected boolean removeEldestEntry(Map.Entry<Focus, List<Recipe>> entry) { return size() > 64; }
+    private final Map<Focus, CachedFocus> focused = new LinkedHashMap<>(16, 0.75f, true) {
+        @Override protected boolean removeEldestEntry(Map.Entry<Focus, CachedFocus> entry) { return size() > 64; }
     };
 
     public MachineRecipeLookup(RecipeMap map, Supplier<RecipeVariants.Mode> mode) {
         this.map = map;
         this.variants = ((RecipeMapRevision) map).gtqualityneo$recipeVariants();
         this.mode = mode;
+        this.standardQueries = standardQueries(map);
+    }
+
+    private static boolean standardQueries(RecipeMap map) {
+        try {
+            return map.getClass().getMethod("getNEIRecipesFor", ItemStack.class).getDeclaringClass() == RecipeMap.class
+                && map.getClass().getMethod("getNEIUsagesFor", ItemStack.class).getDeclaringClass() == RecipeMap.class
+                && map.getClass().getMethod("getNEIRecipes", ItemStack[].class).getDeclaringClass() == RecipeMap.class
+                && map.getClass().getMethod("getNEIUsages", ItemStack[].class).getDeclaringClass() == RecipeMap.class;
+        } catch (ReflectiveOperationException e) { return false; }
     }
 
     private Stamp current() {
         return new Stamp(map instanceof RecipeMapRevision revision ? revision.gtqualityneo$recipeRevision() : 0,
+            ((RecipeMapRevision) map).gtqualityneo$recipeResetVersion(),
             map.mRecipeList.size(), map.mRecipeMapHandlers.size(), mode.get());
     }
 
     private void refresh() {
         var current = current();
         if (!current.equals(stamp)) {
+            if (stamp == null || current.reset() != stamp.reset() || current.handlers() != stamp.handlers()
+                || !current.mode().equals(stamp.mode())) focused.clear();
             stamp = current;
             all = null;
-            focused.clear();
         }
     }
 
@@ -59,12 +76,23 @@ public final class MachineRecipeLookup {
             refresh();
             var key = new Focus(stack.getItem(), stack.getCount(), stack.getComponentsPatch(), input);
             var cached = focused.get(key);
-            if (cached != null) return cached;
-            try (var batch = RecipeConfigBatch.open()) {
-                var result = pages(input ? map.getNEIUsagesFor(stack) : map.getNEIRecipesFor(stack));
+            if (cached != null) {
+                if (cached.stamp().equals(stamp)) return cached.pages();
+                if (standardQueries && !cached.queries().isEmpty()
+                    && cached.queries().stream().allMatch(RecipeQueryIndex.QueryStamp::valid)) {
+                    // New recipes may extend a merged process group without changing this focus's matches.
+                    var result = pages(cached.sources());
+                    focused.put(key, new CachedFocus(cached.sources(), result, cached.queries(), stamp));
+                    return result;
+                }
+            }
+            try (var batch = RecipeConfigBatch.open(); var capture = RecipeQueryIndex.capture()) {
+                // GT6 answers the query (overridden by hammer/crucible maps); the RecipeMap mixin only narrows its scan.
+                var sources = List.copyOf(input ? map.getNEIUsagesFor(stack) : map.getNEIRecipesFor(stack));
+                var result = pages(sources);
                 // Generation may have changed this and previously cached results, including all-recipes pages.
                 refresh();
-                focused.put(key, result);
+                focused.put(key, new CachedFocus(sources, result, capture.queries(), stamp));
                 return result;
             } catch (Exception e) {
                 e.printStackTrace(CS.ERR);
@@ -108,7 +136,8 @@ public final class MachineRecipeLookup {
     /** Preserve GT6's cheap startup emptiness check rather than generating every machine at JEI startup. */
     public List<Recipe> lazyAll() { return new DeferredRecipes(); }
 
-    private record Stamp(long revision, int recipes, int handlers, RecipeVariants.Mode mode) {}
+    private record Stamp(long revision, long reset, int recipes, int handlers, RecipeVariants.Mode mode) {}
+    private record CachedFocus(List<Recipe> sources, List<Recipe> pages, List<RecipeQueryIndex.QueryStamp> queries, Stamp stamp) {}
     private record Focus(Item item, int count, DataComponentPatch components, boolean input) {}
 
     private final class DeferredRecipes extends AbstractList<Recipe> {
