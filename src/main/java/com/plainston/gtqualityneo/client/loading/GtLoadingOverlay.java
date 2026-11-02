@@ -1,5 +1,6 @@
 package com.plainston.gtqualityneo.client.loading;
 
+import com.plainston.gtqualityneo.GTQualityNeo;
 import com.plainston.gtqualityneo.mixin.client.LoadingFrameInvoker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
@@ -23,6 +24,7 @@ public final class GtLoadingOverlay {
             value.replace("Loader_", "").replace('_', ' '));
     }
     private static void draw(ScreenEvent.Render.Post event) {
+        if (!GTQualityNeo.CLIENT_CONFIG.isLoaded() || !GTQualityNeo.WORLD_LOADING_PROGRESS.get()) return;
         var state = GtLoadingProgress.snapshot();
         if (state == null) return;
         var graphics = event.getGuiGraphics();
@@ -45,6 +47,7 @@ public final class GtLoadingOverlay {
         graphics.fill(left + Math.max(0, highlight), top, left + Math.min(span, highlight + 32), top + 3, 0xFFB1E8DC);
     }
     private static void refresh() {
+        if (!GTQualityNeo.CLIENT_CONFIG.isLoaded() || !GTQualityNeo.WORLD_LOADING_PROGRESS.get()) return;
         var minecraft = Minecraft.getInstance();
         if (!minecraft.isSameThread() || minecraft.screen == null || minecraft.getOverlay() != null || refreshing) return;
         long now = Util.getMillis();

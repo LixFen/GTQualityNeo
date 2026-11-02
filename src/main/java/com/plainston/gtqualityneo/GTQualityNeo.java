@@ -19,7 +19,7 @@ public final class GTQualityNeo {
     public static final ModConfigSpec.BooleanValue OBSTRUCTED_INTERACTION, GUI_FLUID_INTERACTION,
         SAP_BAG_EXTRACTION, HEAT_HAZMAT_IMMUNITY, TOOL_BARS, CIRCUIT_SELECTOR, UNIVERSAL_HAZMAT, JEI_WORLDGEN, DRILL_MODES, ONE_WAY_PIPES, JEI_MULTIBLOCKS, MODIFIED_TOOLTIPS, JEI_FLUID_VARIANTS, JEI_OREDICT_VARIANTS, JEI_MERGE_CRAFTING, JEI_RECIPE_QUERY_OPTIMIZATION;
     public static final ModConfigSpec.BooleanValue MOLD_SELECTOR, STORAGE_FORM, CREATIVE_TANK, FILTER_GHOST,
-        SCAFFOLD_COLLISION, HOPPER_SHAPES;
+        SCAFFOLD_COLLISION, HOPPER_SHAPES, WORLD_LOADING_PROGRESS;
     public static final ModConfigSpec.DoubleValue SCAFFOLD_UP, SCAFFOLD_DOWN;
 
     static {
@@ -48,6 +48,8 @@ public final class GTQualityNeo {
         SCAFFOLD_DOWN = builder.defineInRange("scaffoldClimbDownSpeed", 0.15, 0.0, 2.0);
         SERVER_CONFIG = builder.build();
         builder = new ModConfigSpec.Builder();
+        WORLD_LOADING_PROGRESS = builder.comment("Show GT6 loading stages and progress while entering a world.")
+            .define("worldLoadingProgress", true);
         MODIFIED_TOOLTIPS = builder.comment("Show animated rainbow tooltips on items with targeted GTQuality changes.")
             .define("modifiedItemTooltips", true);
         JEI_MULTIBLOCKS = builder.define("jeiMultiblockPreview", true);

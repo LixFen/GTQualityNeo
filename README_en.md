@@ -31,7 +31,7 @@ Machine recipe generation batches config writes, saving each requested config on
 - Adjust scaffold climbing speed and scaffold collision, and update hopper selection and collision shapes.
 - Allow closed, dry trapdoors to provide air to combustion boxes.
 - Display GT6 tool durability and energy bars.
-- Show GT6 loading stages and progress in the upper-left corner while entering a world; hide the indicator when loading finishes.
+- Show GT6 loading stages and progress in the upper-left corner while entering a world; hide the indicator when loading finishes. Set `worldLoadingProgress = false` in `config/gtqualityneo-client.toml` to disable it.
 
 ### LDLib2 interface (experimental)
 
@@ -53,7 +53,7 @@ Config files are generated under the instance's `config/` directory. Most featur
 | File | Settings |
 | --- | --- |
 | `gtqualityneo-common.toml` | `jadeIntegration`, `universalHazmatEnhancement` |
-| `gtqualityneo-client.toml` | `gtmToolBars`, `jeiWorldgenDisplay`, `jeiMultiblockPreview`, `jeiFluidVariants`, `jeiOreDictVariants`, `jeiMergeCraftingTable`, `scaffoldClimbUpSpeed`, `scaffoldClimbDownSpeed` |
+| `gtqualityneo-client.toml` | `gtmToolBars`, `worldLoadingProgress`, `jeiWorldgenDisplay`, `jeiMultiblockPreview`, `jeiFluidVariants`, `jeiOreDictVariants`, `jeiMergeCraftingTable`, `scaffoldClimbUpSpeed`, `scaffoldClimbDownSpeed` |
 | `gtqualityneo-server.toml` | `allowObstructedInteraction`, `guiFluidInteraction`, `drillRangeModes`, `oneWayFluidPipes`, `allowSapBagHopperExtraction`, `heatHazmatFireImmunity`, `circuitSelectorGui`, `moldShapeSelector`, `massStorageFormSwitching`, `creativeTank`, `scaffoldCollisionChanges`, `hopperShapeChanges`, `jeiFilterGhostIngredients` |
 
 The default scaffold climb speeds are `0.14` up and `0.15` down. The Jade registration switch requires a restart to take effect.

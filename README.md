@@ -35,7 +35,7 @@
 
 ## QoL 功能
 
-- GT6 世界加载期间，左上角显示当前加载内容和阶段进度，完成后自动隐藏。
+- GT6 世界加载期间，左上角显示当前加载内容和阶段进度，完成后自动隐藏。可在 `config/gtqualityneo-client.toml` 中设置 `worldLoadingProgress = false` 关闭。
 - 添加了资源扫描仪
 - 手持凿子潜行右键模具选择形状
 - 手持选择器电路 Shift + 右键空气选号
@@ -64,6 +64,7 @@
 | --- | --- | --- |
 | `jadeIntegration` | `gtqualityneo-common.toml` | `true`，注册开关需重启 |
 | `gtmToolBars` | `gtqualityneo-client.toml` | `true` |
+| `worldLoadingProgress` | `gtqualityneo-client.toml` | `true` |
 | `allowObstructedInteraction` | `gtqualityneo-server.toml` | `true` |
 | `guiFluidInteraction` | 同上 | `true` |
 | `drillRangeModes` | 同上 | `true` |
