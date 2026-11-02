@@ -31,6 +31,7 @@ JEI code is organized into `machine`, `cache`, `compat` and `crafting` packages.
 - Adjust scaffold climbing speed and scaffold collision, and update hopper selection and collision shapes.
 - Allow closed, dry trapdoors to provide air to combustion boxes.
 - Display GT6 tool durability and energy bars.
+- Show GT6 loading stages and progress in the upper-left corner while entering a world; hide the indicator when loading finishes.
 
 ### LDLib2 interface (experimental)
 

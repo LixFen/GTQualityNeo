@@ -30,6 +30,12 @@
     "defaultRequire": 1
   },
   "client": [
+    "client.LoadingFrameInvoker",
+    "client.GtLoadingLifecycleMixin",
+    "client.GtLoadingBarMixin",
+    "client.GtLoadingTasksMixin",
+    "client.GtLoadingServerMixin",
+    "client.GtLoadingJeiMixin",
     "client.JeiRegistrationLoggingMixin",
     "client.JeiMachineRegistrationMixin",
     "client.JeiDynamicIngredientsMixin",

@@ -35,6 +35,7 @@ public final class QolClient {
     private static Object consumedFluidScreen;
 
     public QolClient(IEventBus bus, ModContainer container) {
+        com.plainston.gtqualityneo.client.loading.GtLoadingOverlay.register();
         com.plainston.gtqualityneo.scanner.client.ScannerClient.register(bus, container);
         NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.client.event.ClientResourceLoadFinishedEvent event) ->
             com.plainston.gtqualityneo.integration.jei.compat.DynamicRecipeIngredients.invalidateResources());
