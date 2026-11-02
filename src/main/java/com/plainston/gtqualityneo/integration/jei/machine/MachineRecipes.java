@@ -55,10 +55,17 @@ public final class MachineRecipes {
         }
     }
     public void registerAdvanced(IAdvancedRegistration registration) {
-        types.forEach((map, type) -> {
-            try { registration.addSimpleRecipeManagerPlugin(type, new MachineRecipeManagerPlugin(map)); }
+        int registered = 0;
+        for (var entry : types.entrySet()) {
+            var map = entry.getKey();
+            try {
+                registration.addSimpleRecipeManagerPlugin(entry.getValue(), new MachineRecipeManagerPlugin(map));
+                registered++;
+            }
             catch (RuntimeException e) { LOGGER.error("Skipping JEI lookup for RecipeMap '{}'", map.mNameInternal, e); }
-        });
+        }
+        LOGGER.info("GTQualityNeo JEI: registered {}/{} machine lookup plugins ({} failed).",
+            registered, types.size(), types.size() - registered);
     }
     public void registerCatalysts(IRecipeCatalystRegistration registration) {
         types.forEach((map, type) -> {

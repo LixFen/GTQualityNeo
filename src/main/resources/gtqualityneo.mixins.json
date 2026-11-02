@@ -30,6 +30,7 @@
     "defaultRequire": 1
   },
   "client": [
+    "client.JeiRegistrationLoggingMixin",
     "client.JeiMachineRegistrationMixin",
     "client.JeiDynamicIngredientsMixin",
     "client.JeiDynamicIngredientsExtractMixin",
