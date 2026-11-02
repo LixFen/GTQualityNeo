@@ -36,7 +36,6 @@
     "client.GtLoadingTasksMixin",
     "client.GtLoadingServerMixin",
     "client.GtLoadingJeiMixin",
-    "client.JeiRegistrationLoggingMixin",
     "client.JeiMachineRegistrationMixin",
     "client.JeiDynamicIngredientsMixin",
     "client.JeiDynamicIngredientsExtractMixin",
