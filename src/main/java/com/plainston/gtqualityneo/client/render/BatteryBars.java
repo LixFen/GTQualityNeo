@@ -35,8 +35,7 @@ public final class BatteryBars {
         var data = ItemNBT.get(stack);
         long capacity = capacity(data, battery.mCapacity);
         if (capacity <= 0) return;
-        boolean charged = registration.mParameters.getBooleanOr(CS.NBT_ACTIVE_ENERGY, false);
-        long energy = energy(data, capacity, battery.mEnergy, charged);
+        long energy = energy(data, capacity, registration.mParameters);
         int fallback = data == null ? battery.getPaint() : data.getIntOr(CS.NBT_COLOR, battery.getPaint());
         int color = COLORS.computeIfAbsent(registration, ignored -> color(stack));
         if (color < 0) color = fallback;
@@ -49,7 +48,10 @@ public final class BatteryBars {
         return data == null ? fallback : data.getLongOr(CS.NBT_CAPACITY, fallback);
     }
 
-    static long energy(CompoundTag data, long capacity, long fallback, boolean charged) {
+    static long energy(CompoundTag data, long capacity, CompoundTag parameters) {
+        // The canonical battery is mutable (creative subitems charge it); only registration NBT holds defaults.
+        long fallback = parameters.getLongOr(CS.NBT_ENERGY, 0L);
+        boolean charged = parameters.getBooleanOr(CS.NBT_ACTIVE_ENERGY, false);
         if (data != null) charged = data.getBooleanOr(CS.NBT_ACTIVE_ENERGY, charged);
         return charged ? capacity : data == null ? fallback : data.getLongOr(CS.NBT_ENERGY, fallback);
     }
