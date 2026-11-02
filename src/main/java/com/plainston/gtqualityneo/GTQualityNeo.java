@@ -17,9 +17,9 @@ public final class GTQualityNeo {
     public static final ModConfigSpec.BooleanValue JADE_INTEGRATION;
     public static final ModConfigSpec SERVER_CONFIG, CLIENT_CONFIG;
     public static final ModConfigSpec.BooleanValue OBSTRUCTED_INTERACTION, GUI_FLUID_INTERACTION,
-        SAP_BAG_EXTRACTION, HEAT_HAZMAT_IMMUNITY, TOOL_BARS, CIRCUIT_SELECTOR, UNIVERSAL_HAZMAT, JEI_WORLDGEN, DRILL_MODES, ONE_WAY_PIPES, JEI_MULTIBLOCKS, MODIFIED_TOOLTIPS, JEI_FLUID_VARIANTS, JEI_OREDICT_VARIANTS, JEI_MERGE_CRAFTING;
+        SAP_BAG_EXTRACTION, HEAT_HAZMAT_IMMUNITY, TOOL_BARS, CIRCUIT_SELECTOR, UNIVERSAL_HAZMAT, JEI_WORLDGEN, DRILL_MODES, ONE_WAY_PIPES, JEI_MULTIBLOCKS, MODIFIED_TOOLTIPS, JEI_FLUID_VARIANTS, JEI_OREDICT_VARIANTS, JEI_MERGE_CRAFTING, JEI_RECIPE_QUERY_OPTIMIZATION;
     public static final ModConfigSpec.BooleanValue MOLD_SELECTOR, STORAGE_FORM, CREATIVE_TANK, FILTER_GHOST,
-        SCAFFOLD_COLLISION, HOPPER_SHAPES, JEI_MACHINE_LOOKUP;
+        SCAFFOLD_COLLISION, HOPPER_SHAPES;
     public static final ModConfigSpec.DoubleValue SCAFFOLD_UP, SCAFFOLD_DOWN;
 
     static {
@@ -55,13 +55,14 @@ public final class GTQualityNeo {
             .define("gtmToolBars", true);
         JEI_WORLDGEN = builder.comment("Display configured GT6 resource generation rules in JEI. Restart required.")
             .define("jeiWorldgenDisplay", true);
+        JEI_RECIPE_QUERY_OPTIMIZATION = builder.comment("Optimize recipe queries by preparing and indexing GT6 recipes when JEI loads. Disabling restores GT6's native categories and lookups; machine variant merging and crafting-table merging require this option. Restart required.")
+            .define("jeiRecipeQueryOptimization", true);
         JEI_FLUID_VARIANTS = builder.comment("Combine machine recipes differing only in one fluid input with the same amount, outputs, duration and power.")
             .define("jeiFluidVariants", true);
         JEI_OREDICT_VARIANTS = builder.comment("Combine machine recipes whose GT6 material inputs differ only within one \"Any\" material family (e.g. AnySteel) and give the same outputs, duration and power.")
             .define("jeiOreDictVariants", true);
         JEI_MERGE_CRAFTING = builder.comment("Show GT6 workbench recipes in JEI's vanilla Crafting category instead of a separate GT6 one. Applies when JEI reloads.")
             .define("jeiMergeCraftingTable", true);
-        JEI_MACHINE_LOOKUP = builder.define("jeiMachineRecipeLookup", true);
         FILTER_GHOST = builder.define("jeiFilterGhostIngredients", true);
         CLIENT_CONFIG = builder.build();
     }

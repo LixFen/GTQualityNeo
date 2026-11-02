@@ -28,15 +28,10 @@
 ## JEI 兼容
 
 - 按类型合并了大量配方
-- 优化了配方查询速率
-
-机器配方页面、查询插件和机器入口由 GTQualityNeo 独立注册，沿用 GT6 的类别 ID、配方数据及机器催化剂。
-配方查询仍由 GT6 完成（焦点展开、按需生成、匹配，锤子、坩埚等自定义查询照常生效）；GTQualityNeo 只把其中的全表扫描缩小为输入/输出索引的候选，并跳过重复的模板生成。
-工作台、熏炉和原版高炉的 GT6 兼容保持原有路径。首次展开整个类别仍需生成该类别的完整配方。
-
-JEI 代码按 `machine`（页面、查询、合并）、`cache`、`compat`、`crafting` 分包。
-GT6w 适配代码顶部标明了版本风险；更新 GT6w 后需复核注册入口、匹配规则和配方变更钩子。
-
+- 使用 JEI 原生索引查询机器配方
+- `jeiRecipeQueryOptimization`：优化配方查询效率，默认开启。关闭后恢复 GT6 原生分类和按需查询；机器变体合并、工作台分类合并随之停用。修改后重启客户端。
+- 接管了配方注册
+- 机器配方批量生成时合并配置保存，每份配置在该配方表生成结束后写入一次。
 
 ## QoL 功能
 
@@ -88,7 +83,6 @@ GT6w 适配代码顶部标明了版本风险；更新 GT6w 后需复核注册入
 | `jeiFluidVariants` | 同上 | `true` |
 | `jeiOreDictVariants` | 同上 | `true` |
 | `jeiMergeCraftingTable` | 同上 | `true` |
-| `jeiMachineRecipeLookup` | 同上 | `true` |
 | `scaffoldClimbUpSpeed` | 同上 | `0.14` |
 | `scaffoldClimbDownSpeed` | 同上 | `0.15` |
 

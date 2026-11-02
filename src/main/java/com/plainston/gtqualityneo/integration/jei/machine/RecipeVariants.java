@@ -26,7 +26,6 @@ import java.util.Objects;
  */
 public final class RecipeVariants {
     private RecipeVariants() {}
-    public static long ingredientVersion(Recipe recipe) { return recipe instanceof Grouped grouped ? grouped.version : 0; }
 
     /** Which slot kinds may vary on one card. Fluids: the single fluid input. Ore dictionary: GT6 material items. */
     public record Mode(boolean fluids, boolean oreDict) {
@@ -213,8 +212,7 @@ public final class RecipeVariants {
 
     /** A private display copy, never inserted into a RecipeMap or used by a machine. */
     static final class Grouped extends Recipe {
-        private List<Recipe> members;
-        private long version;
+        private final List<Recipe> members;
 
         Grouped(List<Recipe> members) {
             super(false, false, null, null, null, null, null, null, 1, 0, 0);
@@ -240,10 +238,6 @@ public final class RecipeVariants {
 
         List<Recipe> members() { return members; }
 
-        // Complete a streamed first card if on-demand registration extends its process group.
-        void completeFrom(Recipe page) {
-            var next = page instanceof Grouped grouped ? grouped.members : List.of(page);
-            if (!members.equals(next)) { members = next; version++; }
-        }
+
     }
 }

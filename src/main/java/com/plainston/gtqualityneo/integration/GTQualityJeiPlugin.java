@@ -4,6 +4,7 @@ package com.plainston.gtqualityneo.integration;
 import com.plainston.gtqualityneo.GTQualityNeo;
 import com.plainston.gtqualityneo.client.screen.CreativeTankScreen;
 import com.plainston.gtqualityneo.integration.jei.crafting.MergedCraftingRecipes;
+import com.plainston.gtqualityneo.integration.jei.crafting.CookingRecipes;
 import com.plainston.gtqualityneo.integration.jei.machine.MachineRecipes;
 import gregapi.gui.ContainerCommon;
 import gregapi.gui.Slot_Base;
@@ -32,8 +33,14 @@ import java.util.Optional;
 public final class GTQualityJeiPlugin implements IModPlugin {
     private final MachineRecipes machines = new MachineRecipes();
     private mezz.jei.api.runtime.IJeiRuntime runtime;
-    /** Read once per JEI load, so the extension, the lookup and the hidden GT6 category always agree. */
+    /** Read once per JEI load, so the extension, registered recipes and hidden GT6 category always agree. */
     private boolean mergeCrafting;
+    private static boolean optimizeRecipeQueries = true;
+    public static boolean optimizeRecipeQueries() { return optimizeRecipeQueries; }
+    /** Snapshot before GT6 and this plugin register their categories, keeping both on the same path. */
+    @Override public void registerIngredients(mezz.jei.api.registration.IModIngredientRegistration registration) {
+        optimizeRecipeQueries = GTQualityNeo.JEI_RECIPE_QUERY_OPTIMIZATION.get();
+    }
     @Override public void onRuntimeAvailable(mezz.jei.api.runtime.IJeiRuntime runtime) {
         this.runtime = runtime;
         machines.runtime(runtime);
@@ -41,33 +48,39 @@ public final class GTQualityJeiPlugin implements IModPlugin {
         catch (RuntimeException e) { com.mojang.logging.LogUtils.getLogger().warn("Could not hide GT6's separate crafting category", e); }
     }
     @Override public void registerVanillaCategoryExtensions(mezz.jei.api.registration.IVanillaCategoryExtensionRegistration registration) {
-        mergeCrafting = GTQualityNeo.JEI_MERGE_CRAFTING.get();
+        mergeCrafting = optimizeRecipeQueries && GTQualityNeo.JEI_MERGE_CRAFTING.get();
         if (mergeCrafting) registration.getCraftingCategory().addExtension(MergedCraftingRecipes.View.class,
             new MergedCraftingRecipes.Extension(registration.getJeiHelpers().getGuiHelper()));
     }
     @Override public void onRuntimeUnavailable() {
         runtime = null;
         machines.runtime(null);
-        com.plainston.gtqualityneo.integration.jei.compat.DynamicRecipeIngredients.invalidateResources();
+        CookingRecipes.reset();
     }
     @Override public void registerCategories(mezz.jei.api.registration.IRecipeCategoryRegistration registration) {
-        machines.registerCategories(registration);
+        CookingRecipes.reset();
+        if (optimizeRecipeQueries) machines.registerCategories(registration);
         if (GTQualityNeo.JEI_MULTIBLOCKS.get()) registration.addRecipeCategories(new com.plainston.gtqualityneo.integration.multiblock.MultiblockCategory(registration.getJeiHelpers(), () -> runtime));
         if (GTQualityNeo.JEI_WORLDGEN.get()) registration.addRecipeCategories(
             new com.plainston.gtqualityneo.integration.worldgen.WorldgenCategory(registration.getJeiHelpers().getGuiHelper(), () -> runtime));
     }
+    @Override public void registerRecipes(mezz.jei.api.registration.IRecipeRegistration registration) {
+        if (optimizeRecipeQueries) {
+            CookingRecipes.register(registration);
+            machines.registerRecipes(registration);
+        }
+        if (mergeCrafting) MergedCraftingRecipes.register(registration);
+    }
     @Override public void registerAdvanced(mezz.jei.api.registration.IAdvancedRegistration registration) {
-        machines.registerAdvanced(registration);
         if (GTQualityNeo.JEI_MULTIBLOCKS.get()) registration.addSimpleRecipeManagerPlugin(
             com.plainston.gtqualityneo.integration.multiblock.MultiblockCategory.TYPE, new com.plainston.gtqualityneo.integration.multiblock.MultiblockLookup());
         if (GTQualityNeo.JEI_WORLDGEN.get()) registration.addSimpleRecipeManagerPlugin(
             com.plainston.gtqualityneo.integration.worldgen.WorldgenCategory.TYPE,
             new com.plainston.gtqualityneo.integration.worldgen.WorldgenLookup());
-        if (mergeCrafting) registration.addSimpleRecipeManagerPlugin(RecipeTypes.CRAFTING, new MergedCraftingRecipes.Lookup(() -> runtime));
     }
     @Override public Identifier getPluginUid() { return Identifier.fromNamespaceAndPath(GTQualityNeo.MOD_ID, "qol"); }
     @Override public void registerRecipeCatalysts(mezz.jei.api.registration.IRecipeCatalystRegistration registration) {
-        machines.registerCatalysts(registration);
+        if (optimizeRecipeQueries) machines.registerCatalysts(registration);
     }
     @Override public void registerRecipeTransferHandlers(IRecipeTransferRegistration registration) {
         registration.addRecipeTransferHandler(new TableTransfer<>(GT6_JEI_CraftingCategory.TYPE));

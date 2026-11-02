@@ -151,8 +151,6 @@ dependencies {
     localRuntime "maven.modrinth:jade:${jade_version}"
     compileOnly 'mezz.jei:jei-26.1.2-common-api:29.43.0.105'
     compileOnly 'mezz.jei:jei-26.1.2-neoforge-api:29.43.0.105'
-    // Dynamic-recipe ingredient caching targets the pinned JEI implementation; never package its classes.
-    compileOnly 'mezz.jei:jei-26.1.2-neoforge:29.43.0.105@jar'
     localRuntime 'mezz.jei:jei-26.1.2-neoforge:29.43.0.105'
     // Example optional mod dependency with JEI
     // The JEI API is declared for compile time use, while the full JEI artifact is used at runtime

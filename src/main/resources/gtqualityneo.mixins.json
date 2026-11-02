@@ -5,6 +5,7 @@
   "compatibilityLevel": "JAVA_25",
   "mixins": [
     "PrefixOreMapAccessor",
+    "RecipeConfigSaveMixin",
     "jade.DeviceDataAccessors$Energy",
     "jade.DeviceDataAccessors$Efficiency",
     "jade.DeviceDataAccessors$Boiler",
@@ -37,12 +38,6 @@
     "client.GtLoadingServerMixin",
     "client.GtLoadingJeiMixin",
     "client.JeiMachineRegistrationMixin",
-    "client.JeiDynamicIngredientsMixin",
-    "client.JeiDynamicIngredientsExtractMixin",
-    "client.JeiRecipeMapRevisionMixin",
-    "client.JeiRecipeMapQueryMixin",
-    "client.RecipeRegistrationCollisionMixin",
-    "client.JeiRecipeConfigMixin",
     "client.ToolModelMixin",
     "client.GuiGraphicsAccessor"
   ]

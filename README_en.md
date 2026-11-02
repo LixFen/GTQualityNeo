@@ -14,11 +14,11 @@ Install GTQualityNeo and Jade on both the client and server for synchronized mac
 
 ### JEI integration
 
-With JEI installed, the mod merges selected recipe displays, improves machine recipe lookup, supports filter ghost items\fluids from JEI, adds multiblock structure previews, and provides GregTech resource-generation queries. It also supports fluid and ore-dictionary recipe variants and merged crafting-table recipes. These features can be configured individually.
+With JEI installed, the mod merges selected recipe displays, uses JEI indexing for machine recipes, supports filter ghost items\fluids from JEI, adds multiblock structure previews, and provides GregTech resource-generation queries. It also supports fluid and ore-dictionary recipe variants and merged crafting-table recipes. These features can be configured individually.
 
-GTQualityNeo owns machine category registration, pages, lookup plugins and machine catalysts, while retaining GT6 category IDs and recipe data. GT6 still answers each lookup (focus expansion, on-demand generation, matching, and the custom hammer/crucible queries); GTQualityNeo only narrows its full recipe scan to input/output index candidates and skips repeated template generation. Existing workbench, smoking and blasting integrations keep their original paths. Opening an entire category still requires generating its complete recipe list.
+`jeiRecipeQueryOptimization` (default: true) prepares recipes for JEI indexing to speed up queries. Disable it to restore GT6 native categories and on-demand lookups; machine variant merging and crafting-table merging are also disabled. Restart the client after changing it.
 
-JEI code is organized into `machine`, `cache`, `compat` and `crafting` packages. Compatibility adapters carry a warning at the top: recheck registration hooks, matching rules and recipe lifecycle hooks after upgrading GT6w.
+Machine recipe generation batches config writes, saving each requested config once when its recipe map finishes.
 
 ### Quality-of-life changes
 
@@ -53,7 +53,7 @@ Config files are generated under the instance's `config/` directory. Most featur
 | File | Settings |
 | --- | --- |
 | `gtqualityneo-common.toml` | `jadeIntegration`, `universalHazmatEnhancement` |
-| `gtqualityneo-client.toml` | `gtmToolBars`, `jeiWorldgenDisplay`, `jeiMultiblockPreview`, `jeiFluidVariants`, `jeiOreDictVariants`, `jeiMergeCraftingTable`, `jeiMachineRecipeLookup`, `scaffoldClimbUpSpeed`, `scaffoldClimbDownSpeed` |
+| `gtqualityneo-client.toml` | `gtmToolBars`, `jeiWorldgenDisplay`, `jeiMultiblockPreview`, `jeiFluidVariants`, `jeiOreDictVariants`, `jeiMergeCraftingTable`, `scaffoldClimbUpSpeed`, `scaffoldClimbDownSpeed` |
 | `gtqualityneo-server.toml` | `allowObstructedInteraction`, `guiFluidInteraction`, `drillRangeModes`, `oneWayFluidPipes`, `allowSapBagHopperExtraction`, `heatHazmatFireImmunity`, `circuitSelectorGui`, `moldShapeSelector`, `massStorageFormSwitching`, `creativeTank`, `scaffoldCollisionChanges`, `hopperShapeChanges`, `jeiFilterGhostIngredients` |
 
 The default scaffold climb speeds are `0.14` up and `0.15` down. The Jade registration switch requires a restart to take effect.
