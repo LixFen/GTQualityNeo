@@ -3,6 +3,7 @@ package com.plainston.gtqualityneo.client.ui;
 import gregapi.gui.ContainerClient;
 import com.plainston.gtqualityneo.qol.StorageMenus;
 import com.plainston.gtqualityneo.qol.MachineMenus;
+import com.plainston.gtqualityneo.qol.SpecialMenus;
 import gregapi.gui.ContainerCommonBasicMachine;
 import net.neoforged.neoforge.client.event.ScreenEvent;
 import net.neoforged.neoforge.common.NeoForge;
@@ -21,5 +22,6 @@ public final class StorageUiIntegration {
         if (StorageMenus.supports(menu)) event.setNewScreen(new StorageScreen(menu));
         else if (MachineMenus.supports(menu))
             event.setNewScreen(new MachineScreen((ContainerCommonBasicMachine) menu));
+        else if (SpecialMenus.supports(menu)) event.setNewScreen(new FixedInventoryScreen(screen));
     }
 }

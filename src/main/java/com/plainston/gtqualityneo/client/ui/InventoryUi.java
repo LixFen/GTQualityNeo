@@ -6,6 +6,8 @@ import com.lowdragmc.lowdraglib2.gui.texture.SpriteTexture;
 import com.lowdragmc.lowdraglib2.gui.ui.UIElement;
 import com.lowdragmc.lowdraglib2.gui.ui.elements.ItemSlot;
 import com.lowdragmc.lowdraglib2.gui.ui.elements.Label;
+import com.lowdragmc.lowdraglib2.gui.ui.rendering.GUIContext;
+import com.lowdragmc.lowdraglib2.gui.ui.rendering.IGUIContext;
 import com.lowdragmc.lowdraglib2.gui.ui.styletemplate.MCSprites;
 import dev.vfyjxf.taffy.style.TaffyPosition;
 import gregapi.block.multitileentity.MultiTileEntityRegistry;
@@ -13,9 +15,11 @@ import gregapi.gui.ContainerCommon;
 import gregapi.gui.Slot_Base;
 import gregapi.gui.Slot_Render;
 import gregapi.tileentity.base.TileEntityBase04MultiTileEntities;
+import gregapi.util.ST;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
 
 /** Shared vanilla panel, name tab and bindings for the inventory and machine screens. */
 final class InventoryUi {
@@ -53,7 +57,16 @@ final class InventoryUi {
     }
 
     static ItemSlot slot(ContainerCommon menu, Slot slot, int x, int y) {
-        var element = new ItemSlot().bind(slot)
+        var element = new ItemSlot() {
+            @Override protected void drawItemStack(IGUIContext context, ItemStack stack) {
+                if (ST.zerosize(stack) && context instanceof GUIContext graphics) {
+                    // GT6's remembered crafting ingredients are types, not real stacks of one item.
+                    graphics.graphics.item(stack, 0, 0);
+                    graphics.graphics.itemDecorations(graphics.mc.font, stack, 0, 0, "0");
+                    graphics.graphics.fill(0, 0, 16, 16, 0x30ffffff);
+                } else super.drawItemStack(context, stack);
+            }
+        }.bind(slot)
             .slotStyle(s -> s.isPlayerSlot(slot.container == menu.mInventoryPlayer));
         element.layout(l -> l.positionType(TaffyPosition.ABSOLUTE).left(x).top(y)
             .width(18).height(18).paddingAll(1));

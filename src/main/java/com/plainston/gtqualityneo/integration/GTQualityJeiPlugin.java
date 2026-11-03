@@ -107,7 +107,10 @@ public final class GTQualityJeiPlugin implements IModPlugin {
     }
     @Override public void registerGuiHandlers(IGuiHandlerRegistration registration) {
         if (GTQualityNeo.CREATIVE_TANK.get()) registration.addGhostIngredientHandler(CreativeTankScreen.class, new TankGhost());
-        if (GTQualityNeo.FILTER_GHOST.get()) registration.addGhostIngredientHandler(gregapi.gui.ContainerClient.class, new FilterGhostHandler());
+        if (GTQualityNeo.FILTER_GHOST.get()) {
+            registration.addGhostIngredientHandler(gregapi.gui.ContainerClient.class, new FilterGhostHandler<>());
+            registration.addGhostIngredientHandler(com.plainston.gtqualityneo.client.ui.FixedInventoryScreen.class, new FilterGhostHandler<>());
+        }
     }
     private static final class TankGhost implements IGhostIngredientHandler<CreativeTankScreen> {
         @Override public <I> List<Target<I>> getTargetsTyped(CreativeTankScreen screen, ITypedIngredient<I> ingredient, boolean doStart) {
