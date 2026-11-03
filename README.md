@@ -22,6 +22,10 @@ GTQualityNeo adds details for GregTech machines and blocks:
 
 Jade integration can be disabled with `jadeIntegration = false`;
 
+### LDLib2 interfaces (experimental)
+
+The client requires LDLib2 `26.1.2.43` or newer. LDLib2 interfaces cover basic and multiblock machines, plain storage, advanced crafting tables, item/fluid and prefix filters, and both beehive variants including scoop access. Crafting tables and beehives keep their functional slot arrangements; normal and advanced beehives retain 36 and 20 slots respectively.
+
 ### JEI integration
 
 - Merge selected recipe displays and crafting-table recipes.
