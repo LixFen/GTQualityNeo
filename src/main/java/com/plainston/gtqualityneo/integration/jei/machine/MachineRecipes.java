@@ -67,7 +67,7 @@ public final class MachineRecipes {
     static List<Recipe> prepareRecipes(RecipeMap map, RecipeVariants.Mode mode) throws ReflectiveOperationException {
         synchronized (map) {
             List<Recipe> recipes;
-            try (var saves = RecipeConfigBatch.begin()) {
+            try (var saves = RecipeConfigBatch.begin(); var checks = RecipeRegistrationFilter.begin(map)) {
                 // GT6 removes completed handlers while iterating; a snapshot avoids skipping their neighbours.
                 for (var handler : new ArrayList<>(map.mRecipeMapHandlers)) {
                     handler.addAllRecipes(map);

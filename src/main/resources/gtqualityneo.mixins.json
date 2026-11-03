@@ -6,6 +6,8 @@
   "mixins": [
     "PrefixOreMapAccessor",
     "RecipeConfigSaveMixin",
+    "RecipeRegistrationFilterMixin",
+    "RecipeDataRefreshMixin",
     "jade.DeviceDataAccessors$Energy",
     "jade.DeviceDataAccessors$Efficiency",
     "jade.DeviceDataAccessors$Boiler",
