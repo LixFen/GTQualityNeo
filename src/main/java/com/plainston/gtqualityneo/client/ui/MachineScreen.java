@@ -54,10 +54,12 @@ final class MachineScreen extends AbstractContainerScreen<ContainerCommonBasicMa
             // Read the old GUI coordinates before LDLib repositions the original Slot.
             int textureX = slot.x - 1, textureY = slot.y - 1;
             var element = InventoryUi.slot(menu, slot, position.x(), position.y());
+            if (!player) {
+                element.style(s -> s.background(SpriteTexture.of(guiTexture).setSprite(textureX, textureY, 18, 18)));
+            }
             if (slot instanceof Slot_Render) {
                 boolean input = index - layout.fluidStart() < layout.inputFluids();
-                element.style(s -> s.background(SpriteTexture.of(guiTexture).setSprite(textureX, textureY, 18, 18))
-                    .tooltips(text(input ? "fluid_input" : "fluid_output")));
+                element.style(s -> s.tooltips(text(input ? "fluid_input" : "fluid_output")));
             }
             root.addChild(element);
         }
