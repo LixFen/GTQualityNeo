@@ -19,8 +19,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     env:
-      GT_VERSION: 6.0.0-alpha.16
-      GT_SHA256: 9d3ff984a112bd9f31271b1c4708e7034daa034689c1c73446512dc49f082e91
+      GT_VERSION: 6.0.0-alpha.17
+      GT_SHA256: 8ca72e496163c629d3c9dd72e0acc66fe781894e756bbda7b0048739ccbecf61
     outputs:
       version: ${{ steps.version.outputs.version }}
     steps:
@@ -62,7 +62,24 @@ jobs:
       - name: Build and test
         env:
           MOD_VERSION: ${{ steps.version.outputs.version }}
-        run: bash ./gradlew build --no-daemon --stacktrace "-Pmod_version=$MOD_VERSION" "-PgregtechJar=libs/gregtech6-$GT_VERSION.jar"
+        shell: bash
+        run: |
+          set -euo pipefail
+          build_log="$(mktemp)"
+          trap 'rm -f "$build_log"' EXIT
+          for attempt in 1 2 3; do
+            if bash ./gradlew build --no-daemon --stacktrace "-Pmod_version=$MOD_VERSION" "-PgregtechJar=libs/gregtech6-$GT_VERSION.jar" 2>&1 | tee "$build_log"; then
+              exit 0
+            else
+              build_status=$?
+            fi
+            # Dependency downloads may time out; compiler and test failures should fail immediately.
+            if [[ "$attempt" == 3 ]] || ! grep -Eq 'Could not (GET|HEAD)|SocketTimeoutException|ConnectException|UnknownHostException|Connection reset' "$build_log"; then
+              exit "$build_status"
+            fi
+            echo "::warning::Dependency download failed; retrying build ($attempt/3)."
+            sleep 15
+          done
 
       - name: Upload jar
         uses: actions/upload-artifact@v7
