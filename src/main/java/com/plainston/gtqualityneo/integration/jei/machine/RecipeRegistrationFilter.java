@@ -12,11 +12,12 @@ import net.minecraft.world.item.ItemStack;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
-/** A conservative input precheck, scoped to one map's bulk generation. GT6 still decides every possible match. */
+/** A conservative input precheck for a bulk generation batch. GT6 still decides every possible match. */
 public final class RecipeRegistrationFilter implements AutoCloseable {
     private static final ThreadLocal<RecipeRegistrationFilter> ACTIVE = new ThreadLocal<>();
     private final RecipeRegistrationFilter parent;
     private final RecipeMap map;
+    private RecipeMap queryMap;
     private Map<Item, ShortSet> inputs;
 
     private RecipeRegistrationFilter(RecipeMap map) {
@@ -27,9 +28,12 @@ public final class RecipeRegistrationFilter implements AutoCloseable {
 
     public static RecipeRegistrationFilter begin(RecipeMap map) { return new RecipeRegistrationFilter(map); }
 
+    /** A loader batch registers into multiple maps; each nested query still owns its input precheck. */
+    public static RecipeRegistrationFilter beginAll() { return new RecipeRegistrationFilter(null); }
+
     public static Query query(RecipeMap map, boolean enabled, ItemStack[] supplied) {
         var filter = ACTIVE.get();
-        if (filter == null || filter.map != map) return null;
+        if (filter == null || (filter.map != null && filter.map != map)) return null;
         Map<Item, ShortSet> keys = null;
         if (enabled) {
             keys = new IdentityHashMap<>();
@@ -45,7 +49,7 @@ public final class RecipeRegistrationFilter implements AutoCloseable {
                 }
             }
         }
-        return new Query(filter, keys);
+        return new Query(filter, map, keys);
     }
 
     private static Item family(Item item) {
@@ -59,14 +63,16 @@ public final class RecipeRegistrationFilter implements AutoCloseable {
 
     public static boolean mayMatch(RecipeMap map, Recipe recipe) {
         var filter = ACTIVE.get();
-        if (filter == null || filter.map != map || filter.inputs == null || recipe.getClass() != Recipe.class) return true;
+        if (filter == null || filter.queryMap != map || filter.inputs == null || recipe.getClass() != Recipe.class) return true;
         // Even a size-zero catalyst is required by checkStacksEqual. One impossible required input is enough
         // to reject a candidate, but fluids, amounts, NBT, input order and priority stay with the original code.
         for (var required : recipe.mInputs) if (ST.valid(required)) {
             var metas = filter.inputs.get(family(required.getItem()));
             if (metas == null) return false;
             short meta = ST.meta_(required);
-            return meta == CS.W || metas.contains(CS.W) || metas.contains(meta);
+            if (meta != CS.W && !metas.contains(CS.W) && !metas.contains(meta)) return false;
+            // Keep the existing first-input shortcut for map-specific JEI batches.
+            if (filter.map != null) return true;
         }
         return true;
     }
@@ -74,12 +80,15 @@ public final class RecipeRegistrationFilter implements AutoCloseable {
     public static final class Query implements AutoCloseable {
         private final RecipeRegistrationFilter filter;
         private final Map<Item, ShortSet> previous;
-        private Query(RecipeRegistrationFilter filter, Map<Item, ShortSet> inputs) {
+        private final RecipeMap previousMap;
+        private Query(RecipeRegistrationFilter filter, RecipeMap map, Map<Item, ShortSet> inputs) {
             this.filter = filter;
             previous = filter.inputs;
+            previousMap = filter.queryMap;
+            filter.queryMap = map;
             filter.inputs = inputs;
         }
-        @Override public void close() { filter.inputs = previous; }
+        @Override public void close() { filter.inputs = previous; filter.queryMap = previousMap; }
     }
 
     @Override public void close() {
