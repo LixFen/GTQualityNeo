@@ -14,8 +14,16 @@ final class StorageScreen extends AbstractContainerScreen<ContainerCommon> {
     private final ModularUI ui;
 
     StorageScreen(ContainerCommon menu) {
-        this(menu, new StorageLayout((int) menu.slots.stream()
-            .filter(slot -> slot.container != menu.mInventoryPlayer).count()));
+        this(menu, storageLayout(menu));
+    }
+
+    private static StorageLayout storageLayout(ContainerCommon menu) {
+        var slots = menu.slots.stream().filter(slot -> slot.container != menu.mInventoryPlayer).toList();
+        if (slots.isEmpty()) return new StorageLayout(0, 1);
+        // Read GT6's row width before LDLib repositions the slots.
+        int firstRowY = slots.getFirst().y;
+        int columns = (int) slots.stream().takeWhile(slot -> slot.y == firstRowY).count();
+        return new StorageLayout(slots.size(), columns);
     }
 
     private StorageScreen(ContainerCommon menu, StorageLayout layout) {
