@@ -19,6 +19,11 @@ public final class ScannerItem extends Item implements IItemEnergy {
     public final int tier;
     public ScannerItem(int tier, Properties properties) { super(properties); this.tier = tier; }
     public long voltage() { return gregapi.data.CS.V[tier]; }
+    public ItemStack fullyChargedStack() {
+        var stack = new ItemStack(this);
+        return setEnergyStored(TD.Energy.EU, stack, getEnergyCapacity(TD.Energy.EU, stack));
+    }
+
     private IItemEnergy energy(ItemStack stack) {
         // A real empty template keeps an exhausted scanner from being consumed by EnergyStat.
         var empty = new ItemStack(this);

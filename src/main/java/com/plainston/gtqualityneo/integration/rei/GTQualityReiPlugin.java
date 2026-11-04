@@ -6,6 +6,7 @@ import com.plainston.gtqualityneo.integration.jei.machine.MachineRecipePreparati
 import com.plainston.gtqualityneo.integration.jei.machine.RecipeVariants;
 import com.plainston.gtqualityneo.integration.multiblock.ReiMultiblockCategory;
 import com.plainston.gtqualityneo.integration.worldgen.ReiWorldgenCategory;
+import com.plainston.gtqualityneo.scanner.ScannerIntegration;
 import dev.architectury.fluid.FluidStack;
 import gregapi.GT_API;
 import gregapi.block.prefixblock.PrefixBlockItem;
@@ -61,6 +62,8 @@ public final class GTQualityReiPlugin implements REIClientPlugin {
             // REI inserts an item's base stack even when GT6 deliberately omits it from creative tabs.
             return ST.hidden(stack) || (stack.getItem() instanceof PrefixBlockItem && !stack.has(GT_API.SUBTYPE_TYPE));
         });
+        ScannerIntegration.SCANNERS.forEach(supplier ->
+            registry.addEntry(EntryStacks.of(supplier.get().fullyChargedStack())));
     }
 
     @Override

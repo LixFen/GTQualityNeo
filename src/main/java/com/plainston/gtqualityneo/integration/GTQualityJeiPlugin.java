@@ -6,6 +6,9 @@ import com.plainston.gtqualityneo.client.screen.CreativeTankScreen;
 import com.plainston.gtqualityneo.integration.jei.crafting.MergedCraftingRecipes;
 import com.plainston.gtqualityneo.integration.jei.crafting.CookingRecipes;
 import com.plainston.gtqualityneo.integration.jei.machine.MachineRecipes;
+import com.plainston.gtqualityneo.scanner.ScannerIntegration;
+import com.plainston.gtqualityneo.scanner.ScannerItem;
+import gregapi.data.TD;
 import gregapi.gui.ContainerCommon;
 import gregapi.gui.Slot_Base;
 import gregapi.jei.GT6_JEI_CraftingCategory;
@@ -15,10 +18,13 @@ import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.constants.RecipeTypes;
 import mezz.jei.api.gui.handlers.IGhostIngredientHandler;
 import mezz.jei.api.ingredients.ITypedIngredient;
+import mezz.jei.api.ingredients.subtypes.UidContext;
 import mezz.jei.api.recipe.transfer.IRecipeTransferInfo;
 import mezz.jei.api.recipe.types.IRecipeType;
 import mezz.jei.api.registration.IGuiHandlerRegistration;
+import mezz.jei.api.registration.IExtraIngredientRegistration;
 import mezz.jei.api.registration.IRecipeTransferRegistration;
+import mezz.jei.api.registration.ISubtypeRegistration;
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.inventory.MenuType;
@@ -37,6 +43,22 @@ public final class GTQualityJeiPlugin implements IModPlugin {
     private boolean mergeCrafting;
     private static boolean optimizeRecipeQueries = true;
     public static boolean optimizeRecipeQueries() { return optimizeRecipeQueries; }
+
+    @Override public void registerItemSubtypes(ISubtypeRegistration registration) {
+        ScannerIntegration.SCANNERS.forEach(supplier -> {
+            var scanner = supplier.get();
+            registration.registerSubtypeInterpreter(scanner, (stack, context) ->
+                context == UidContext.Ingredient
+                    && scanner.getEnergyStored(TD.Energy.EU, stack) == scanner.getEnergyCapacity(TD.Energy.EU, stack)
+                    ? Boolean.TRUE : null);
+        });
+    }
+
+    @Override public void registerExtraIngredients(IExtraIngredientRegistration registration) {
+        registration.addExtraItemStacks(ScannerIntegration.SCANNERS.stream()
+            .map(supplier -> supplier.get()).map(ScannerItem::fullyChargedStack).toList());
+    }
+
     /** Snapshot before GT6 and this plugin register their categories, keeping both on the same path. */
     @Override public void registerIngredients(mezz.jei.api.registration.IModIngredientRegistration registration) {
         optimizeRecipeQueries = GTQualityNeo.JEI_RECIPE_QUERY_OPTIMIZATION.get();
