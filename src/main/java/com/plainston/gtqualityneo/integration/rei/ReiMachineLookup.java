@@ -58,7 +58,7 @@ final class ReiMachineLookup implements DynamicDisplayGenerator<ReiMachineDispla
 
     @Override public Optional<List<ReiMachineDisplay>> getUsageFor(EntryStack<?> entry) {
         var workstations = CategoryRegistry.getInstance().get(category).getWorkstations();
-        var wildcard = entry.wildcard();
+        var wildcard = ReiItemLookup.wildcard(entry);
         for (var workstation : workstations) {
             if (EntryIngredients.testFuzzy(workstation, entry) || EntryIngredients.testFuzzy(workstation, wildcard))
                 return Optional.of(displays);
@@ -73,6 +73,6 @@ final class ReiMachineLookup implements DynamicDisplayGenerator<ReiMachineDispla
     private static Optional<List<ReiMachineDisplay>> find(Map<EntryStack<?>, List<ReiMachineDisplay>> index,
                                                          EntryStack<?> entry) {
         var matches = index.get(entry);
-        return Optional.ofNullable(matches != null ? matches : index.get(entry.wildcard()));
+        return Optional.ofNullable(matches != null ? matches : index.get(ReiItemLookup.wildcard(entry)));
     }
 }

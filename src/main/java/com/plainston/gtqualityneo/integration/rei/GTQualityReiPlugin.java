@@ -89,6 +89,7 @@ public final class GTQualityReiPlugin implements REIClientPlugin {
 
     @Override
     public void registerDisplays(DisplayRegistry registry) {
+        registry.registerVisibilityPredicate(ReiItemLookup::filterDisplay);
         var mode = new RecipeVariants.Mode(GTQualityNeo.JEI_FLUID_VARIANTS.get(), GTQualityNeo.JEI_OREDICT_VARIANTS.get());
         var names = new LinkedHashMap<String, CategoryIdentifier<ReiMachineDisplay>>();
         categories.forEach((map, id) -> {
