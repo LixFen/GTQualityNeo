@@ -13,7 +13,6 @@ import mezz.jei.api.registration.IRecipeCategoryRegistration;
 import mezz.jei.api.runtime.IJeiRuntime;
 import net.minecraft.world.item.ItemStack;
 import org.slf4j.Logger;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -59,28 +58,11 @@ public final class MachineRecipes {
     public void registerRecipes(IRecipeRegistration registration) {
         var mode = new RecipeVariants.Mode(GTQualityNeo.JEI_FLUID_VARIANTS.get(), GTQualityNeo.JEI_OREDICT_VARIANTS.get());
         types.forEach((map, type) -> {
-            try { registration.addRecipes(type, prepareRecipes(map, mode)); }
+            try { registration.addRecipes(type, MachineRecipePreparation.prepare(map, mode)); }
             catch (Exception e) { LOGGER.error("Skipping JEI recipes for RecipeMap '{}'", map.mNameInternal, e); }
         });
     }
 
-    static List<Recipe> prepareRecipes(RecipeMap map, RecipeVariants.Mode mode) throws ReflectiveOperationException {
-        synchronized (map) {
-            List<Recipe> recipes;
-            try (var saves = RecipeConfigBatch.begin(); var checks = RecipeRegistrationFilter.begin(map)) {
-                // GT6 removes completed handlers while iterating; a snapshot avoids skipping their neighbours.
-                for (var handler : new ArrayList<>(map.mRecipeMapHandlers)) {
-                    handler.addAllRecipes(map);
-                    if (handler.isDone()) map.mRecipeMapHandlers.remove(handler);
-                }
-                // Hammer/crucible maps append virtual recipes outside mRecipeList.
-                recipes = map.getClass().getMethod("getNEIAllRecipes").getDeclaringClass() != RecipeMap.class
-                    ? map.getNEIAllRecipes() : new ArrayList<>(map.mRecipeList);
-            }
-            var visible = recipes.stream().filter(recipe -> recipe.mEnabled && !recipe.mHidden).toList();
-            return mode.any() ? RecipeVariants.group(visible, mode) : visible;
-        }
-    }
     public void registerCatalysts(IRecipeCatalystRegistration registration) {
         types.forEach((map, type) -> {
             try {

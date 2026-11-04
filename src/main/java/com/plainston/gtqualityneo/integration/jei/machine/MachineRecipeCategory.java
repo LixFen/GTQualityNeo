@@ -21,7 +21,7 @@ public final class MachineRecipeCategory extends AbstractRecipeCategory<Recipe> 
         super(type, Component.translatableWithFallback(map.mNameInternal, map.mNameLocal),
             map.mRecipeMachineList.isEmpty() ? helper.createBlankDrawable(16, 16)
                 : helper.createDrawableItemStack(map.mRecipeMachineList.getFirst()),
-            RecipeLayout.WIDTH, MachineRecipeDisplay.layout(map).height());
+            RecipeLayout.WIDTH, MachineRecipeVisuals.layout(map).height());
         this.map = map;
     }
 
@@ -30,7 +30,7 @@ public final class MachineRecipeCategory extends AbstractRecipeCategory<Recipe> 
         MachineRecipeDisplay.setRecipe(map, builder, recipe);
     }
     @Override public void draw(Recipe recipe, IRecipeSlotsView slots, GuiGraphicsExtractor graphics, double mouseX, double mouseY) {
-        MachineRecipeDisplay.draw(map, recipe, graphics);
+        MachineRecipeVisuals.draw(map, recipe, graphics);
     }
     @Override public void createRecipeExtras(IRecipeExtrasBuilder builder, Recipe recipe, IFocusGroup focuses) {
         MachineRecipeDisplay.extras(map, recipe, builder);
