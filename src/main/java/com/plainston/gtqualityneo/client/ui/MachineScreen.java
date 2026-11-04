@@ -12,6 +12,7 @@ import dev.vfyjxf.taffy.style.TaffyPosition;
 import gregapi.data.LH;
 import gregapi.gui.ContainerCommonBasicMachine;
 import gregapi.gui.Slot_Render;
+import gregapi.recipes.Recipe.RecipeMap;
 import gregapi.tileentity.machines.MultiTileEntityBasicMachine;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -22,7 +23,7 @@ import java.util.Locale;
 final class MachineScreen extends AbstractContainerScreen<ContainerCommonBasicMachine> {
     private final ModularUI ui;
     private final MachineLayout layout;
-    private final String recipeCategory;
+    private final RecipeMap recipes;
     private final String guiTexture;
     private final int progressDirection, progressCycles;
 
@@ -41,7 +42,7 @@ final class MachineScreen extends AbstractContainerScreen<ContainerCommonBasicMa
         super(menu, menu.mInventoryPlayer, Component.literal(LH.get(machine.getInventoryNameGUI())),
             MachineLayout.WIDTH, layout.height());
         this.layout = layout;
-        recipeCategory = machine.mRecipes.mNameNEI;
+        recipes = machine.mRecipes;
         guiTexture = machine.mGUITexture.toLowerCase(Locale.ROOT);
         progressDirection = machine.mRecipes.mProgressBarDirection;
         progressCycles = Byte.toUnsignedInt(machine.mRecipes.mProgressBarAmount);
@@ -104,7 +105,7 @@ final class MachineScreen extends AbstractContainerScreen<ContainerCommonBasicMa
         double x = event.x() - leftPos, y = event.y() - topPos;
         if (x >= MachineLayout.ARROW_X && x < MachineLayout.ARROW_X + MachineLayout.ARROW_WIDTH
             && y >= layout.arrowY() && y < layout.arrowY() + MachineLayout.ARROW_HEIGHT
-            && gregapi.data.CS.NEI && gregapi.jei.GT6_JEI_Plugin.showRecipeCategory(recipeCategory)) return true;
+            && recipes.openNEI()) return true;
         return super.mouseClicked(event, doubleClick);
     }
 

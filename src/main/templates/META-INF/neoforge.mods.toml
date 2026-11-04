@@ -107,6 +107,13 @@ Quality-of-life additions for the GregTech 6 NeoForge port: machine interaction,
     ordering="AFTER"
     side="BOTH"
 
+[[dependencies.${mod_id}]]
+    modId="roughlyenoughitems"
+    type="optional"
+    versionRange="[26.1.819,26.2)"
+    ordering="NONE"
+    side="CLIENT"
+
 [[mixins]]
 config="gtqualityneo.mixins.json"
 

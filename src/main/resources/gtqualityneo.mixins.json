@@ -45,6 +45,8 @@
     "client.GtLoadingServerMixin",
     "client.GtLoadingJeiMixin",
     "client.JeiMachineRegistrationMixin",
+    "client.ReiRecipeGuiMixin$Container",
+    "client.ReiRecipeGuiMixin$Proxy",
     "client.ToolModelMixin",
     "client.GuiGraphicsAccessor"
   ]

@@ -34,6 +34,10 @@ repositories {
     maven { url = 'https://api.modrinth.com/maven' }
     maven { url = 'https://maven.blamejared.com' }
     maven { url = 'https://maven.ftb.dev/releases' }
+    maven {
+        url = 'https://maven.shedaniel.me'
+        content { includeGroup 'me.shedaniel'; includeGroup 'me.shedaniel.cloth'; includeGroup 'dev.architectury' }
+    }
     // Add here additional repositories if required by some of the dependencies below.
 }
 
@@ -151,7 +155,14 @@ dependencies {
     localRuntime "maven.modrinth:jade:${jade_version}"
     compileOnly 'mezz.jei:jei-26.1.2-common-api:29.43.0.105'
     compileOnly 'mezz.jei:jei-26.1.2-neoforge-api:29.43.0.105'
-    localRuntime 'mezz.jei:jei-26.1.2-neoforge:29.43.0.105'
+    compileOnly 'me.shedaniel:RoughlyEnoughItems-api-neoforge:26.1.819'
+    if (providers.gradleProperty('recipeBrowser').orElse('jei').get() == 'rei') {
+        localRuntime 'maven.modrinth:rei:26.1.819+neoforge'
+        localRuntime 'maven.modrinth:architectury-api:20.1.17+neoforge'
+        localRuntime 'maven.modrinth:cloth-config:26.1.154+neoforge'
+    } else {
+        localRuntime 'mezz.jei:jei-26.1.2-neoforge:29.43.0.105'
+    }
     // Example optional mod dependency with JEI
     // The JEI API is declared for compile time use, while the full JEI artifact is used at runtime
     // compileOnly "mezz.jei:jei-${mc_version}-common-api:${jei_version}"
