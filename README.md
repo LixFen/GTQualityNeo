@@ -38,6 +38,15 @@ These features can be configured individually.
 
 > **Recipe indexing:** `jeiRecipeQueryOptimization` (default: `true`) prepares recipes for JEI indexing to speed up queries. It may slightly increase world startup time.
 
+### REI integration
+
+- With REI 26.1.819 on NeoForge, browse GT6 machine recipes and look up their item and fluid inputs and outputs. Open the relevant category from the machine's recipe button.
+- GT6 workbench recipes appear in REI's Crafting category. The entry list uses GT6's fluid display items for GT6 fluids.
+- Browse interactive multiblock previews and world generation rules, drag ghost ingredients into filters or the creative tank, and look up GT6 smoking and blasting recipes.
+- Advanced Crafting Table transfer uses REI's item movement protocol. On a dedicated server it requires REI or REI Server Component.
+- GT6 machine queries use per-category input and output indexes through REI's display generator API. The existing `jeiFluidVariants` and `jeiOreDictVariants` settings also control which machine cards REI merges.
+- Launch the REI development client with `gradlew.bat runClient -PrecipeBrowser=rei`.
+
 ### World loading performance
 
 Installed this mod, the world loading time can be reduced by approximately 40%. (Measured at `jeiRecipeQueryOptimization` is true)

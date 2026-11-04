@@ -201,7 +201,7 @@
   "gtqualityneo.jei.worldgen.world.planets": "其他太空群系",
   "gtqualityneo.circuit.title": "选择电路编号",
   "gtqualityneo.circuit.tooltip": "Shift + 右键：选择 0–24 号电路",
-  "gtqualityneo.jei.filter.ghost": "可从 JEI 拖入幻影物品或流体设置过滤条件",
+  "gtqualityneo.jei.filter.ghost": "可从配方浏览器拖入物品或流体设置过滤条件",
   "gtqualityneo.jei.worldgen.modern_height": "当前维度换算参考（%s）：Y %s。本规则未必在此维度启用，请参照维度列表",
   "gtqualityneo.jei.worldgen.modern_attempts": "当前维度高度缩放后每区块尝试次数：%s",
   "gtqualityneo.jade.part_energy_input": "可接受能量：%s",

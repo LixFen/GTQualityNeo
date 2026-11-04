@@ -55,7 +55,7 @@ public final class GTQualityNeo {
         JEI_MULTIBLOCKS = builder.define("jeiMultiblockPreview", true);
         TOOL_BARS = builder.comment("Show tool durability/charge bars and fluid-colored battery charge bars in GUIs.")
             .define("gtmToolBars", true);
-        JEI_WORLDGEN = builder.comment("Display configured GT6 resource generation rules in JEI. Restart required.")
+        JEI_WORLDGEN = builder.comment("Display configured GT6 resource generation rules in JEI and REI. Restart required.")
             .define("jeiWorldgenDisplay", true);
         JEI_RECIPE_QUERY_OPTIMIZATION = builder.comment("Optimize recipe queries by preparing and indexing GT6 recipes when JEI loads. Disabling restores GT6's native categories and lookups; machine variant merging and crafting-table merging require this option. Restart required.")
             .define("jeiRecipeQueryOptimization", true);

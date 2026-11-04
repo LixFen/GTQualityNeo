@@ -4,6 +4,8 @@ import com.mojang.logging.LogUtils;
 import com.plainston.gtqualityneo.GTQualityNeo;
 import com.plainston.gtqualityneo.integration.jei.machine.MachineRecipePreparation;
 import com.plainston.gtqualityneo.integration.jei.machine.RecipeVariants;
+import com.plainston.gtqualityneo.integration.multiblock.ReiMultiblockCategory;
+import com.plainston.gtqualityneo.integration.worldgen.ReiWorldgenCategory;
 import dev.architectury.fluid.FluidStack;
 import gregapi.GT_API;
 import gregapi.block.prefixblock.PrefixBlockItem;
@@ -16,6 +18,8 @@ import me.shedaniel.rei.api.client.plugins.REIClientPlugin;
 import me.shedaniel.rei.api.client.registry.category.CategoryRegistry;
 import me.shedaniel.rei.api.client.registry.display.DisplayRegistry;
 import me.shedaniel.rei.api.client.registry.entry.EntryRegistry;
+import me.shedaniel.rei.api.client.registry.screen.ScreenRegistry;
+import me.shedaniel.rei.api.client.registry.transfer.TransferHandlerRegistry;
 import me.shedaniel.rei.api.client.view.ViewSearchBuilder;
 import me.shedaniel.rei.api.common.category.CategoryIdentifier;
 import me.shedaniel.rei.api.common.entry.type.VanillaEntryTypes;
@@ -33,6 +37,18 @@ public final class GTQualityReiPlugin implements REIClientPlugin {
     private static final Logger LOGGER = LogUtils.getLogger();
     private static volatile Map<String, CategoryIdentifier<ReiMachineDisplay>> activeCategories = Map.of();
     private final Map<RecipeMap, CategoryIdentifier<ReiMachineDisplay>> categories = new LinkedHashMap<>();
+    private ReiMultiblockCategory multiblock;
+    private ReiWorldgenCategory worldgen;
+
+    @Override
+    public void registerScreens(ScreenRegistry registry) {
+        registry.registerDraggableStackVisitor(new ReiGhostTargets());
+    }
+
+    @Override
+    public void registerTransferHandlers(TransferHandlerRegistry registry) {
+        registry.register(new ReiTableTransfer());
+    }
 
     @Override
     public void registerEntries(EntryRegistry registry) {
@@ -51,6 +67,10 @@ public final class GTQualityReiPlugin implements REIClientPlugin {
     public void registerCategories(CategoryRegistry registry) {
         activeCategories = Map.of();
         categories.clear();
+        multiblock = GTQualityNeo.JEI_MULTIBLOCKS.get() ? new ReiMultiblockCategory() : null;
+        worldgen = GTQualityNeo.JEI_WORLDGEN.get() ? new ReiWorldgenCategory() : null;
+        if (multiblock != null) registry.add(multiblock);
+        if (worldgen != null) registry.add(worldgen);
         var names = new HashSet<String>();
         for (var map : RecipeMap.RECIPE_MAP_LIST) {
             if (!map.mNEIAllowed) continue;
@@ -82,6 +102,9 @@ public final class GTQualityReiPlugin implements REIClientPlugin {
             }
         });
         ReiCraftingRecipes.register(registry);
+        ReiCookingRecipes.register(registry);
+        if (multiblock != null) multiblock.registerDisplays(registry);
+        if (worldgen != null) worldgen.registerDisplays(registry);
         activeCategories = Map.copyOf(names);
     }
 

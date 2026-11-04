@@ -201,7 +201,7 @@
   "gtqualityneo.jei.worldgen.world.planets": "Other space biomes",
   "gtqualityneo.circuit.title": "Select Circuit Number",
   "gtqualityneo.circuit.tooltip": "Shift + Right-click: select circuit number 0-24",
-  "gtqualityneo.jei.filter.ghost": "Drag a ghost item or fluid from JEI to set the filter",
+  "gtqualityneo.jei.filter.ghost": "Drag an item or fluid from the recipe browser to set the filter",
   "gtqualityneo.jei.worldgen.modern_height": "Current dimension reference (%s): Y %s. This rule may be enabled in other dimensions; see the dimension list.",
   "gtqualityneo.jei.worldgen.modern_attempts": "Height-scaled attempts per chunk in current dimension: %s",
   "gtqualityneo.jade.part_energy_input": "Can accept energy: %s",
