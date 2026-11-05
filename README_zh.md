@@ -40,6 +40,8 @@
 - 接管了配方注册
 - 可自由配置功能的开关
 
+GT6w alpha.18 已原生提供工作台配方显示及 AE2 样板编码支持。`jeiMergeCraftingTable` 现控制是否在 JEI 加载时提前索引这些配方；关闭后使用 GT6 按需查询，仍显示在同一工作台分类。此选项需开启 `jeiRecipeQueryOptimization`。
+
 ### REI 兼容
 
 - 添加了 REI 兼容，保留了GT6的和以上JEI的所有功能，推荐使用REI以获得更快的世界载入速度。
@@ -129,7 +131,7 @@
 
 ## 构建
 
-开发环境默认使用 [GT6 alpha.17](https://github.com/wolfram0108/gregtech6_w/releases/tag/v6.0.0-alpha.17)。将 `gregtech6-6.0.0-alpha.17.jar` 放入本项目 `libs/`，再执行构建。
+开发环境默认使用 [GT6 alpha.18](https://github.com/wolfram0108/gregtech6_w/releases/tag/v6.0.0-alpha.18)。将 `gregtech6-6.0.0-alpha.18.jar` 放入本项目 `libs/`，再执行构建。
 
 ### 构建模组
 
@@ -142,7 +144,7 @@
 也可直接指定依赖位置：
 
 ```powershell
-.\gradlew.bat build '-PgregtechJar=D:/CodeReference/gregtech6_w/build/libs/gregtech6-6.0.0-alpha.17.jar'
+.\gradlew.bat build '-PgregtechJar=D:/CodeReference/gregtech6_w/build/libs/gregtech6-6.0.0-alpha.18.jar'
 ```
 
 ### 启动开发客户端
@@ -150,5 +152,5 @@
 如需单独指定开发运行时依赖：
 
 ```powershell
-.\gradlew.bat runClient '-PgregtechRuntimeJar=libs/gregtech6-6.0.0-alpha.17.jar'
+.\gradlew.bat runClient '-PgregtechRuntimeJar=libs/gregtech6-6.0.0-alpha.18.jar'
 ```

@@ -118,7 +118,7 @@ The default scaffold climb speeds are `0.14` up and `0.15` down.
 
 ## Build from source
 
-Use a JDK 25 toolchain. The Gradle build expects the GregTech jar at `libs/gregtech6-6.0.0-alpha.17.jar` by default. Place the jar there before building.
+Use a JDK 25 toolchain. The Gradle build expects the GregTech jar at `libs/gregtech6-6.0.0-alpha.18.jar` by default. Place the jar there before building.
 
 ### Build
 
@@ -131,7 +131,7 @@ Use a JDK 25 toolchain. The Gradle build expects the GregTech jar at `libs/gregt
 Alternatively, pass an explicit GregTech jar path:
 
 ```powershell
-.\gradlew.bat build '-PgregtechJar=D:/path/to/gregtech6-6.0.0-alpha.17.jar'
+.\gradlew.bat build '-PgregtechJar=D:/path/to/gregtech6-6.0.0-alpha.18.jar'
 ```
 
 ### Development client
@@ -139,5 +139,5 @@ Alternatively, pass an explicit GregTech jar path:
 To use a separate GregTech jar for the development runtime:
 
 ```powershell
-.\gradlew.bat runClient '-PgregtechRuntimeJar=libs/gregtech6-6.0.0-alpha.17.jar'
+.\gradlew.bat runClient '-PgregtechRuntimeJar=libs/gregtech6-6.0.0-alpha.18.jar'
 ```

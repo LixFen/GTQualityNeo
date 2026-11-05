@@ -147,7 +147,7 @@ dependencies {
     testImplementation 'dev.ftb.mods:ftb-library-neoforge:26.1.2.8'
     testImplementation 'dev.ftb.mods:ftb-teams-neoforge:26.1.2.4'
     // Develop and test against the current GT6 port.
-    def gregtechJar = providers.gradleProperty('gregtechJar').orElse('libs/gregtech6-6.0.0-alpha.17.jar')
+    def gregtechJar = providers.gradleProperty('gregtechJar').orElse('libs/gregtech6-6.0.0-alpha.18.jar')
     compileOnly files(gregtechJar)
     testCompileOnly files(gregtechJar)
     runtimeOnly files(providers.gradleProperty('gregtechRuntimeJar').orElse(gregtechJar))

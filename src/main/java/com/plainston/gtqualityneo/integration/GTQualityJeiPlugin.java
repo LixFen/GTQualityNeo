@@ -1,4 +1,4 @@
-// 兼容说明：依赖 GT6w alpha.17 / 当前 JEI 的接口；未来上游更新后本适配可能过时，需复核。
+// 兼容说明：依赖 GT6w alpha.18 / 当前 JEI 的接口；未来上游更新后本适配可能过时，需复核。
 package com.plainston.gtqualityneo.integration;
 
 import com.plainston.gtqualityneo.GTQualityNeo;
@@ -11,7 +11,6 @@ import com.plainston.gtqualityneo.scanner.ScannerItem;
 import gregapi.data.TD;
 import gregapi.gui.ContainerCommon;
 import gregapi.gui.Slot_Base;
-import gregapi.jei.GT6_JEI_CraftingCategory;
 import gregapi.tileentity.tools.MultiTileEntityAdvancedCraftingTable;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
@@ -39,8 +38,8 @@ import java.util.Optional;
 public final class GTQualityJeiPlugin implements IModPlugin {
     private final MachineRecipes machines = new MachineRecipes();
     private mezz.jei.api.runtime.IJeiRuntime runtime;
-    /** Read once per JEI load, so the extension, registered recipes and hidden GT6 category always agree. */
-    private boolean mergeCrafting;
+    private static boolean indexCrafting;
+    public static boolean indexCrafting() { return indexCrafting; }
     private static boolean optimizeRecipeQueries = true;
     public static boolean optimizeRecipeQueries() { return optimizeRecipeQueries; }
 
@@ -62,17 +61,11 @@ public final class GTQualityJeiPlugin implements IModPlugin {
     /** Snapshot before GT6 and this plugin register their categories, keeping both on the same path. */
     @Override public void registerIngredients(mezz.jei.api.registration.IModIngredientRegistration registration) {
         optimizeRecipeQueries = GTQualityNeo.JEI_RECIPE_QUERY_OPTIMIZATION.get();
+        indexCrafting = optimizeRecipeQueries && GTQualityNeo.JEI_MERGE_CRAFTING.get();
     }
     @Override public void onRuntimeAvailable(mezz.jei.api.runtime.IJeiRuntime runtime) {
         this.runtime = runtime;
         machines.runtime(runtime);
-        if (mergeCrafting) try { runtime.getRecipeManager().hideRecipeCategory(GT6_JEI_CraftingCategory.TYPE); }
-        catch (RuntimeException e) { com.mojang.logging.LogUtils.getLogger().warn("Could not hide GT6's separate crafting category", e); }
-    }
-    @Override public void registerVanillaCategoryExtensions(mezz.jei.api.registration.IVanillaCategoryExtensionRegistration registration) {
-        mergeCrafting = optimizeRecipeQueries && GTQualityNeo.JEI_MERGE_CRAFTING.get();
-        if (mergeCrafting) registration.getCraftingCategory().addExtension(MergedCraftingRecipes.View.class,
-            new MergedCraftingRecipes.Extension(registration.getJeiHelpers().getGuiHelper()));
     }
     @Override public void onRuntimeUnavailable() {
         runtime = null;
@@ -91,7 +84,7 @@ public final class GTQualityJeiPlugin implements IModPlugin {
             CookingRecipes.register(registration);
             machines.registerRecipes(registration);
         }
-        if (mergeCrafting) MergedCraftingRecipes.register(registration);
+        if (indexCrafting) MergedCraftingRecipes.register(registration);
     }
     @Override public void registerAdvanced(mezz.jei.api.registration.IAdvancedRegistration registration) {
         if (GTQualityNeo.JEI_MULTIBLOCKS.get()) registration.addSimpleRecipeManagerPlugin(
@@ -105,7 +98,6 @@ public final class GTQualityJeiPlugin implements IModPlugin {
         if (optimizeRecipeQueries) machines.registerCatalysts(registration);
     }
     @Override public void registerRecipeTransferHandlers(IRecipeTransferRegistration registration) {
-        registration.addRecipeTransferHandler(new TableTransfer<>(GT6_JEI_CraftingCategory.TYPE));
         registration.addRecipeTransferHandler(new TableTransfer<>(RecipeTypes.CRAFTING));
     }
     record TableTransfer<R>(IRecipeType<R> type) implements IRecipeTransferInfo<ContainerCommon, R> {

@@ -1,4 +1,4 @@
-// 兼容说明：基于 GT6w alpha.17 的 GT6_JEI_Plugin；未来上游修改注册流程或入口签名后，本适配可能过时，需复核。
+// 兼容说明：基于 GT6w alpha.18 的 GT6_JEI_Plugin；未来上游修改注册流程或入口签名后，本适配可能过时，需复核。
 package com.plainston.gtqualityneo.mixin.client;
 
 import com.plainston.gtqualityneo.integration.jei.machine.MachineRecipes;
@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-/** Own machine pages and register GT6 cooking views normally; preserve its subtypes and crafting lookup. */
+/** Own machine pages and register GT6 cooking views normally; preserve its subtypes and native crafting displays. */
 @Pseudo
 @Mixin(targets = "gregapi.jei.GT6_JEI_Plugin", remap = false)
 public abstract class JeiMachineRegistrationMixin {
@@ -27,8 +27,9 @@ public abstract class JeiMachineRegistrationMixin {
 
     @Redirect(method = "registerAdvanced", at = @At(value = "INVOKE", target =
         "Lmezz/jei/api/registration/IAdvancedRegistration;addSimpleRecipeManagerPlugin(Lmezz/jei/api/recipe/types/IRecipeType;Lmezz/jei/api/recipe/advanced/ISimpleRecipeManagerPlugin;)V"))
-    private <T> void gtqualityneo$registerCookingOnce(IAdvancedRegistration registration, IRecipeType<T> type,
+    private <T> void gtqualityneo$registerLookupOnce(IAdvancedRegistration registration, IRecipeType<T> type,
         ISimpleRecipeManagerPlugin<T> plugin) {
+        if (GTQualityJeiPlugin.indexCrafting() && mezz.jei.api.constants.RecipeTypes.CRAFTING.equals(type)) return;
         if (!GTQualityJeiPlugin.optimizeRecipeQueries() || !CookingRecipes.defer(type, plugin))
             registration.addSimpleRecipeManagerPlugin(type, plugin);
     }
