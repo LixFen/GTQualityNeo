@@ -49,6 +49,7 @@ public final class GTQualityReiPlugin implements REIClientPlugin {
     @Override
     public void registerTransferHandlers(TransferHandlerRegistry registry) {
         registry.register(new ReiTableTransfer());
+        registry.register(new ReiWorkbenchTransfer(registry));
     }
 
     @Override

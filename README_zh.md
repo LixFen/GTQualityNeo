@@ -40,8 +40,6 @@
 - 接管了配方注册
 - 可自由配置功能的开关
 
-GT6w alpha.18 已原生提供工作台配方显示及 AE2 样板编码支持。`jeiMergeCraftingTable` 现控制是否在 JEI 加载时提前索引这些配方；关闭后使用 GT6 按需查询，仍显示在同一工作台分类。此选项需开启 `jeiRecipeQueryOptimization`。
-
 ### REI 兼容
 
 - 添加了 REI 兼容，保留了GT6的和以上JEI的所有功能，推荐使用REI以获得更快的世界载入速度。

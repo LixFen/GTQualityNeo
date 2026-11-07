@@ -18,6 +18,17 @@ public final class QolNetwork {
     private static <T extends CustomPacketPayload> CustomPacketPayload.Type<T> type(String path) {
         return new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath(GTQualityNeo.MOD_ID, path));
     }
+    public record TransferWorkbench(int window, java.util.List<Integer> slots, int gridSize,
+                                    java.util.List<net.minecraft.world.item.ItemStack> inputs) implements CustomPacketPayload {
+        public static final Type<TransferWorkbench> TYPE = QolNetwork.type("transfer_workbench");
+        public static final StreamCodec<RegistryFriendlyByteBuf, TransferWorkbench> CODEC = StreamCodec.composite(
+            ByteBufCodecs.VAR_INT, TransferWorkbench::window,
+            ByteBufCodecs.VAR_INT.apply(ByteBufCodecs.list()), TransferWorkbench::slots,
+            ByteBufCodecs.VAR_INT, TransferWorkbench::gridSize,
+            net.minecraft.world.item.ItemStack.OPTIONAL_STREAM_CODEC.apply(ByteBufCodecs.list()), TransferWorkbench::inputs,
+            TransferWorkbench::new);
+        @Override public Type<TransferWorkbench> type() { return TYPE; }
+    }
     public record OpenMold(BlockPos pos, int shape, int lastShape) implements CustomPacketPayload {
         public static final Type<OpenMold> TYPE = QolNetwork.type("open_mold");
         public static final StreamCodec<RegistryFriendlyByteBuf, OpenMold> CODEC = StreamCodec.composite(
@@ -74,6 +85,11 @@ public final class QolNetwork {
 
     public static void register(RegisterPayloadHandlersEvent event) {
         var registrar = event.registrar("1");
+        registrar.playToServer(TransferWorkbench.TYPE, TransferWorkbench.CODEC, (packet, context) -> {
+            if (context.player() instanceof ServerPlayer player)
+                com.plainston.gtqualityneo.integration.WorkbenchTransfer.transfer(player, packet.window(),
+                    packet.slots(), packet.gridSize(), packet.inputs());
+        });
         registrar.playToClient(OpenMold.TYPE, OpenMold.CODEC);
         registrar.playToClient(OpenCircuit.TYPE, OpenCircuit.CODEC);
         registrar.playToServer(ClickFluid.TYPE, ClickFluid.CODEC, (packet, context) -> {
