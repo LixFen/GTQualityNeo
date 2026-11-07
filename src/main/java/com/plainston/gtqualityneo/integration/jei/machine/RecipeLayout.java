@@ -4,12 +4,16 @@ package com.plainston.gtqualityneo.integration.jei.machine;
 import com.plainston.gtqualityneo.client.ui.MachineLayout;
 
 /** A recipe template independent of the machine GUI texture and its pixel coordinates. */
-public record RecipeLayout(int inputItems, int outputItems, int inputFluids, int outputFluids, int infoHeight) {
+public record RecipeLayout(int inputItems, int outputItems, int inputFluids, int outputFluids, int infoHeight,
+                           boolean squareInputs) {
     public static final int WIDTH = 176, TOP = 4, ARROW_X = 78, INFO_HEIGHT = 54;
     public record Position(int x, int y) {}
 
     public RecipeLayout(int inputItems, int outputItems, int inputFluids, int outputFluids) {
         this(inputItems, outputItems, inputFluids, outputFluids, INFO_HEIGHT);
+    }
+    public RecipeLayout(int inputItems, int outputItems, int inputFluids, int outputFluids, int infoHeight) {
+        this(inputItems, outputItems, inputFluids, outputFluids, infoHeight, false);
     }
     private MachineLayout machine() { return new MachineLayout(inputItems, outputItems, inputFluids, outputFluids, true); }
     public int contentHeight() { return machine().contentHeight(); }
@@ -20,6 +24,9 @@ public record RecipeLayout(int inputItems, int outputItems, int inputFluids, int
     public int height() { return infoY() + infoHeight; }
 
     public Position slot(boolean output, boolean fluid, int index) {
+        if (squareInputs && !output && !fluid)
+            return new Position(ARROW_X - MachineLayout.GAP - 36 + index % 2 * 18,
+                position(0).y() + index / 2 * 18);
         int offset = fluid ? inputItems + outputItems + 1 + (output ? inputFluids : 0) : output ? inputItems : 0;
         return position(offset + index);
     }

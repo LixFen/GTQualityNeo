@@ -3,6 +3,7 @@ package com.plainston.gtqualityneo.integration.jei.machine;
 
 import com.plainston.gtqualityneo.client.ui.MachineProgress;
 import gregapi.data.LH;
+import gregapi.data.RM;
 import gregapi.recipes.Recipe;
 import gregapi.recipes.Recipe.RecipeMap;
 import gregapi.util.ST;
@@ -24,7 +25,7 @@ public final class MachineRecipeVisuals {
         int lines = 2 + (map.mShowVoltageAmperageInNEI ? 2 : 0) + (map.mCombinePower ? 0 : 1);
         if (UT.Code.stringValid(map.mNEISpecialValuePre) || UT.Code.stringValid(map.mNEISpecialValuePost)) lines += 2;
         return new RecipeLayout(map.mInputItemsCount, map.mOutputItemsCount, map.mInputFluidCount, map.mOutputFluidCount,
-            lines * 10 + 4);
+            lines * 10 + 4, map == RM.ToolHeads);
     }
 
     public static void draw(RecipeMap map, Recipe recipe, GuiGraphicsExtractor graphics) {
