@@ -1,5 +1,6 @@
 package com.plainston.gtqualityneo.integration.jei.machine;
 
+import com.plainston.gtqualityneo.integration.RecipeMaterialVisibility;
 import gregapi.data.OP;
 import gregapi.data.RM;
 import gregapi.oredict.OreDictMaterial;
@@ -48,7 +49,7 @@ public final class MachineRecipePreparation {
                 recipes = map.getClass().getMethod("getNEIAllRecipes").getDeclaringClass() != RecipeMap.class
                     ? map.getNEIAllRecipes() : new ArrayList<>(map.mRecipeList);
             }
-            var visible = recipes.stream().filter(recipe -> recipe.mEnabled && !recipe.mHidden).toList();
+            var visible = recipes.stream().filter(RecipeMaterialVisibility::visible).toList();
             return mode.any() ? RecipeVariants.group(visible, mode) : visible;
         }
     }

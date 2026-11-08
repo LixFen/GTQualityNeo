@@ -1,5 +1,6 @@
 package com.plainston.gtqualityneo.integration.rei;
 
+import com.plainston.gtqualityneo.integration.RecipeMaterialVisibility;
 import gregapi.recipes.FurnaceRecipes;
 import gregapi.util.ST;
 import me.shedaniel.rei.api.client.registry.display.DisplayRegistry;
@@ -26,7 +27,7 @@ final class ReiCookingRecipes {
             var input = ST.amount(1, candidate);
             if (!ST.valid(input) || !seen.add(input)) continue;
             var output = answers.result(input);
-            if (!ST.valid(output)) continue;
+            if (!ST.valid(output) || RecipeMaterialVisibility.hidden(input) || RecipeMaterialVisibility.hidden(output)) continue;
             var recipe = new FurnaceRecipeDisplay(slot(input), SlotDisplay.AnyFuel.INSTANCE, slot(output),
                 new SlotDisplay.ItemSlotDisplay(station), 100, channel.engineExperience(output));
             for (var display : registry.tryFillDisplay(recipe)) registry.add(display);

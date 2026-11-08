@@ -1,5 +1,6 @@
 package com.plainston.gtqualityneo.integration.rei;
 
+import com.plainston.gtqualityneo.integration.RecipeMaterialVisibility;
 import com.mojang.logging.LogUtils;
 import gregapi.oredict.OreDictMaterial;
 import gregapi.oredict.OreDictPrefix;
@@ -38,12 +39,12 @@ final class ReiCraftingRecipes {
             if (recipe instanceof ShapedOreRecipe shaped) {
                 var output = shaped.getRecipeOutput();
                 var inputs = inputs(shaped.getInput());
-                if (ST.valid(output) && !inputs.isEmpty())
+                if (ST.valid(output) && !RecipeMaterialVisibility.hidden(output) && !inputs.isEmpty())
                     count += add(registry, new ShapedCraftingRecipeDisplay(shaped.getWidth(), shaped.getHeight(), inputs, slot(output), TABLE));
             } else if (recipe instanceof ShapelessOreRecipe shapeless) {
                 var output = shapeless.getRecipeOutput();
                 var inputs = inputs(shapeless.getInput().toArray());
-                if (ST.valid(output) && !inputs.isEmpty())
+                if (ST.valid(output) && !RecipeMaterialVisibility.hidden(output) && !inputs.isEmpty())
                     count += add(registry, new ShapelessCraftingRecipeDisplay(inputs, slot(output), TABLE));
             } else if (recipe instanceof AdvancedCrafting1ToY single && single.mEmpty >= 0 && single.mEmpty < 9) {
                 count += addFamily(registry, materials, single.mInput, single.mOutput, single.mOutputCount, single::hasOutputFor, single.mEmpty, 1);
@@ -60,11 +61,11 @@ final class ReiCraftingRecipes {
         for (var cell : cells) {
             switch (cell) {
                 case null -> inputs.add(SlotDisplay.Empty.INSTANCE);
-                case ItemStack stack when ST.valid(stack) -> inputs.add(slot(stack));
+                case ItemStack stack when ST.valid(stack) && !RecipeMaterialVisibility.hidden(stack) -> inputs.add(slot(stack));
                 case List<?> choices -> {
                     var alternatives = new ArrayList<SlotDisplay>();
                     for (var choice : choices)
-                        if (choice instanceof ItemStack stack && ST.valid(stack)) alternatives.add(slot(stack));
+                        if (choice instanceof ItemStack stack && ST.valid(stack) && !RecipeMaterialVisibility.hidden(stack)) alternatives.add(slot(stack));
                     if (alternatives.isEmpty()) return List.of();
                     inputs.add(alternatives.size() == 1 ? alternatives.getFirst() : new SlotDisplay.Composite(alternatives));
                 }
@@ -88,7 +89,8 @@ final class ReiCraftingRecipes {
             var actual = data.mMaterial.mMaterial;
             if (actual == null || !hasOutput.test(actual)) continue;
             var output = outputPrefix.mat(actual, outputCount);
-            if (!ST.valid(output) || !seen.add(ST.identityKey(input))) continue;
+            if (!ST.valid(output) || RecipeMaterialVisibility.hidden(input) || RecipeMaterialVisibility.hidden(output)
+                || !seen.add(ST.identityKey(input))) continue;
 
             // Separate cards keep the material pair intact when REI focuses an ingredient.
             if (firstCell >= 0) {
