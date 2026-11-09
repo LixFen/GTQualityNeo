@@ -103,6 +103,7 @@
 | `worldLoadingProgress` | `true` |
 | `jeiWorldgenDisplay` | `true` |
 | `jeiMultiblockPreview` | `true` |
+| `hideInvisibleMaterials` | `true` |
 | `jeiFluidVariants` | `true` |
 | `jeiOreDictVariants` | `true` |
 | `jeiMergeCraftingTable` | `true` |

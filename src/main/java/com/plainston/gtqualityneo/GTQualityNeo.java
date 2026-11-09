@@ -19,7 +19,7 @@ public final class GTQualityNeo {
     public static final ModConfigSpec.BooleanValue OBSTRUCTED_INTERACTION, GUI_FLUID_INTERACTION,
         SAP_BAG_EXTRACTION, HEAT_HAZMAT_IMMUNITY, TOOL_BARS, CIRCUIT_SELECTOR, UNIVERSAL_HAZMAT, JEI_WORLDGEN, DRILL_MODES, ONE_WAY_PIPES, JEI_MULTIBLOCKS, MODIFIED_TOOLTIPS, JEI_FLUID_VARIANTS, JEI_OREDICT_VARIANTS, JEI_MERGE_CRAFTING, JEI_RECIPE_QUERY_OPTIMIZATION;
     public static final ModConfigSpec.BooleanValue MOLD_SELECTOR, STORAGE_FORM, CREATIVE_TANK, FILTER_GHOST,
-        SCAFFOLD_COLLISION, HOPPER_SHAPES, WORLD_LOADING_PROGRESS;
+        SCAFFOLD_COLLISION, HOPPER_SHAPES, WORLD_LOADING_PROGRESS, HIDE_INVISIBLE_MATERIALS;
     public static final ModConfigSpec.DoubleValue SCAFFOLD_UP, SCAFFOLD_DOWN;
 
     static {
@@ -57,6 +57,8 @@ public final class GTQualityNeo {
             .define("gtmToolBars", true);
         JEI_WORLDGEN = builder.comment("Display configured GT6 resource generation rules in JEI and REI. Restart required.")
             .define("jeiWorldgenDisplay", true);
+        HIDE_INVISIBLE_MATERIALS = builder.comment("Hide JEI and REI recipes involving hidden GT6 materials from mods that are not loaded. Respects GT6's show-hidden-materials setting. Restart required.")
+            .define("hideInvisibleMaterials", true);
         JEI_RECIPE_QUERY_OPTIMIZATION = builder.comment("Optimize recipe queries by preparing and indexing GT6 recipes when JEI loads. Disabling restores GT6's native categories and lookups; machine variant merging and crafting indexing require this option. Restart required.")
             .define("jeiRecipeQueryOptimization", true);
         JEI_FLUID_VARIANTS = builder.comment("Combine machine recipes differing only in one fluid input with the same amount, outputs, duration and power.")

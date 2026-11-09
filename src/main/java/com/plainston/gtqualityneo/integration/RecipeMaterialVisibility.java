@@ -1,5 +1,6 @@
 package com.plainston.gtqualityneo.integration;
 
+import com.plainston.gtqualityneo.GTQualityNeo;
 import gregapi.data.CS;
 import gregapi.data.FL;
 import gregapi.data.MD;
@@ -14,6 +15,7 @@ public final class RecipeMaterialVisibility {
     private RecipeMaterialVisibility() {}
 
     public static boolean hidden(OreDictMaterial material) {
+        if (GTQualityNeo.CLIENT_CONFIG.isLoaded() && !GTQualityNeo.HIDE_INVISIBLE_MATERIALS.get()) return false;
         return !CS.SHOW_HIDDEN_MATERIALS && material != null && material.mHidden
             && material.mOriginalMod != null && material.mOriginalMod != MD.GAPI
             && !material.mOriginalMod.mLoaded;

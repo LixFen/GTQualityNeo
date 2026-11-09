@@ -92,6 +92,7 @@ Config files are generated under the instance's `config/` directory. Most featur
 - `worldLoadingProgress`
 - `jeiWorldgenDisplay`
 - `jeiMultiblockPreview`
+- `hideInvisibleMaterials`
 - `jeiFluidVariants`
 - `jeiOreDictVariants`
 - `jeiMergeCraftingTable`
