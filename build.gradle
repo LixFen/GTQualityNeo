@@ -137,6 +137,9 @@ dependencies {
     testImplementation "net.neoforged:testframework:${neo_version}"
     // Use JEI's complete mod jar so its API and implementation share Minecraft's transforming loader in tests.
     testImplementation 'mezz.jei:jei-26.1.2-neoforge:29.43.0.105@jar'
+    testImplementation 'maven.modrinth:rei:26.1.819+neoforge'
+    testImplementation 'maven.modrinth:architectury-api:20.1.17+neoforge'
+    testImplementation 'maven.modrinth:cloth-config:26.1.154+neoforge'
     compileOnly "maven.modrinth:ae2:26.1.13-beta"
     testImplementation "maven.modrinth:ae2:26.1.13-beta"
     localRuntime "maven.modrinth:ae2:26.1.13-beta"

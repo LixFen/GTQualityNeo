@@ -8,6 +8,7 @@ import gregapi.recipes.Recipe;
 import gregapi.recipes.Recipe.RecipeMap;
 import mezz.jei.api.recipe.types.IRecipeType;
 import mezz.jei.api.registration.IRecipeRegistration;
+import mezz.jei.api.registration.IAdvancedRegistration;
 import mezz.jei.api.registration.IRecipeCatalystRegistration;
 import mezz.jei.api.registration.IRecipeCategoryRegistration;
 import mezz.jei.api.runtime.IJeiRuntime;
@@ -27,15 +28,17 @@ public final class MachineRecipes {
     private static MachineRecipes active;
     private final Map<RecipeMap, IRecipeType<Recipe>> types = new LinkedHashMap<>();
     private final Map<String, IRecipeType<Recipe>> names = new LinkedHashMap<>();
+    private final Map<RecipeMap, MachineFluidLookup> fluids = new LinkedHashMap<>();
     private IJeiRuntime runtime;
 
     void rebuild(Collection<RecipeMap> maps) {
-        types.clear(); names.clear();
+        types.clear(); names.clear(); fluids.clear();
         for (var map : maps) {
             if (!map.mNEIAllowed) continue;
             boolean taken = names.containsKey(map.mNameNEI);
             var type = IRecipeType.create(MD.GT.mID, taken ? map.mNameInternal : map.mNameNEI, Recipe.class);
             types.put(map, type);
+            fluids.put(map, new MachineFluidLookup());
             if (!taken) names.put(map.mNameNEI, type);
         }
     }
@@ -58,9 +61,17 @@ public final class MachineRecipes {
     public void registerRecipes(IRecipeRegistration registration) {
         var mode = new RecipeVariants.Mode(GTQualityNeo.JEI_FLUID_VARIANTS.get(), GTQualityNeo.JEI_OREDICT_VARIANTS.get());
         types.forEach((map, type) -> {
-            try { registration.addRecipes(type, MachineRecipePreparation.prepare(map, mode)); }
+            try {
+                var recipes = MachineRecipePreparation.prepare(map, mode);
+                registration.addRecipes(type, recipes);
+                fluids.get(map).index(recipes);
+            }
             catch (Exception e) { LOGGER.error("Skipping JEI recipes for RecipeMap '{}'", map.mNameInternal, e); }
         });
+    }
+
+    public void registerAdvanced(IAdvancedRegistration registration) {
+        types.forEach((map, type) -> registration.addSimpleRecipeManagerPlugin(type, fluids.get(map)));
     }
 
     public void registerCatalysts(IRecipeCatalystRegistration registration) {

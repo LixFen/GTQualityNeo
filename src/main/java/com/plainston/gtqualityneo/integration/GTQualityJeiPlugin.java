@@ -87,6 +87,7 @@ public final class GTQualityJeiPlugin implements IModPlugin {
         if (indexCrafting) MergedCraftingRecipes.register(registration);
     }
     @Override public void registerAdvanced(mezz.jei.api.registration.IAdvancedRegistration registration) {
+        if (optimizeRecipeQueries) machines.registerAdvanced(registration);
         if (GTQualityNeo.JEI_MULTIBLOCKS.get()) registration.addSimpleRecipeManagerPlugin(
             com.plainston.gtqualityneo.integration.multiblock.MultiblockCategory.TYPE, new com.plainston.gtqualityneo.integration.multiblock.MultiblockLookup());
         if (GTQualityNeo.JEI_WORLDGEN.get()) registration.addSimpleRecipeManagerPlugin(

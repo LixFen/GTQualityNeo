@@ -6,7 +6,6 @@ build/
 
 # Tests
 /src/test/
-
 ### IntelliJ IDEA ###
 .idea/
 *.iws
